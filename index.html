@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v86</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v87</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2120,7 +2120,7 @@ async function processQueue(){
 }
 
 const DEFAULT_USERS=[{username:'admin',password:'admin123',role:'admin'},{username:'Alberto',password:'alberto1',role:'operatore'},{username:'Cristina',password:'cristina1',role:'operatore'}];
-let API_URL='',currentUser=null,clienti=[],ordini=[],registro=[],letture=[],importo=20,scadenza=48,filter='all',searchText='',selOrdine=null,editIdx=null,syncing=false,localId=1000;
+let API_URL='https://script.google.com/macros/s/AKfycbzTNiwBWX2G5uR2oIz_tLJBLF1x2QzUJkbT1eGntTuPmlbRC3jCVEiKiCZ1vLYCBVhB/exec',currentUser=null,clienti=[],ordini=[],registro=[],letture=[],importo=20,scadenza=48,filter='all',searchText='',selOrdine=null,editIdx=null,syncing=false,localId=1000;
 // Warning modal mode control
 let warningMode = 'recent'; // 'recent' | 'pending'
 let warningPendingOrder = null;

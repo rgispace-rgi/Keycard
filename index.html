@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v104</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v106</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -1995,7 +1995,7 @@
                 </div>
                 <div class="card">
                     <div class="ordini-header"><div class="card-title" style="margin:0">📋 Ordini</div><div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncTxt">Sincronizzato</span></div></div>
-                    <div class="filters"><button class="filter-btn active" onclick="setFilter('all')" data-f="all">Tutti (48h)</button><button class="filter-btn" onclick="setFilter('pending')" data-f="pending">Pendenti</button><button class="filter-btn" onclick="setFilter('registro')" data-f="registro">Registro</button><button class="filter-btn" onclick="setFilter('eventi')" data-f="eventi" id="btnEventi" style="display:none">Eventi</button><button class="filter-btn" onclick="toggleSearch()" id="btnSearch">🔍</button></div>
+                    <div class="filters"><button class="filter-btn active" onclick="setFilter('all')" data-f="all">Tutti (48h)</button><button class="filter-btn" onclick="setFilter('pending')" data-f="pending">Pendenti</button><button class="filter-btn" onclick="setFilter('registro')" data-f="registro">Registro</button><button class="filter-btn" onclick="setFilter('eventi')" data-f="eventi" id="btnEventi">Eventi</button><button class="filter-btn" onclick="toggleSearch()" id="btnSearch">🔍</button></div>
                     <div id="searchBox" style="display:none;margin-top:10px"><div style="display:flex;gap:8px"><input type="text" id="searchInput" placeholder="#8 lav asc :4" oninput="doSearch()" style="flex:1;padding:12px;border-radius:12px"><button onclick="clearSearch()" style="padding:12px 18px">✖</button></div><div id="searchHelp" style="margin-top:6px;font-size:0.75em;color:#64748b;line-height:1.4">💡 <b>#8</b>=card 8 | <b>lav</b>=lavatrice | <b>asc</b>=asciugatrice | <b>:4</b>=selezione 4 | <b>#8 lav</b>=combinazione</div><div id="searchFiltersRegistro" style="display:none;margin-top:10px"><div style="font-size:0.8em;color:#94a3b8;margin-bottom:6px">Filtra per stato:</div><div style="display:flex;flex-wrap:wrap;gap:6px"><label class="search-filter-chip"><input type="checkbox" value="done" onchange="updateSearchFilters()" checked><span>✅ DONE</span></label><label class="search-filter-chip"><input type="checkbox" value="canceled" onchange="updateSearchFilters()" checked><span>❌ CANCELED</span></label><label class="search-filter-chip"><input type="checkbox" value="failed" onchange="updateSearchFilters()" checked><span>⚠️ FAILED</span></label><label class="search-filter-chip"><input type="checkbox" value="expired" onchange="updateSearchFilters()" checked><span>⏰ EXPIRED</span></label></div></div><div id="searchFiltersEventi" style="display:none;margin-top:10px"><div style="font-size:0.8em;color:#94a3b8;margin-bottom:6px">Filtra per tipo:</div><div style="display:flex;flex-wrap:wrap;gap:6px"><label class="search-filter-chip green"><input type="checkbox" value="ricarica" onchange="updateSearchFilters()" checked><span>💰 Ricarica</span></label><label class="search-filter-chip red"><input type="checkbox" value="scarico" onchange="updateSearchFilters()" checked><span>📤 Scarico</span></label><label class="search-filter-chip purple"><input type="checkbox" value="vendita" onchange="updateSearchFilters()" checked><span>🧺 Utilizzo</span></label><label class="search-filter-chip blue"><input type="checkbox" value="altro" onchange="updateSearchFilters()" checked><span>📊 Altro</span></label></div></div><div style="margin-top:8px;display:flex;align-items:center;gap:8px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85em;color:#94a3b8"><input type="checkbox" id="searchAllTimeCheck" onchange="toggleSearchAllTime()" style="width:18px;height:18px;cursor:pointer"><span>Cerca su tutto (default: ultimi 30 giorni)</span></label></div></div>
                     <div class="ordini-list" id="ordiniList"><div class="empty-state"><div class="empty-icon">📂</div><p>Nessun ordine</p></div></div>
                 </div>
@@ -2388,6 +2388,11 @@ function setWarningMode(mode, pendingOrder=null){
     primaryBtn.classList.remove('modal-btn-warning');
     primaryBtn.classList.add('modal-btn-danger');
     cancelBtn.textContent = 'Chiudi';
+  }else if(mode === 'ricarica'){
+    primaryBtn.textContent = '✅ Procedi comunque';
+    primaryBtn.classList.remove('modal-btn-danger');
+    primaryBtn.classList.add('modal-btn-warning');
+    cancelBtn.textContent = 'Annulla';
   }else{
     primaryBtn.textContent = '⚠️ Procedi';
     primaryBtn.classList.remove('modal-btn-danger');
@@ -2412,7 +2417,7 @@ function getUsers(){return JSON.parse(localStorage.getItem(KEYS.users)||'[]');}
 function saveUsers(u){localStorage.setItem(KEYS.users,JSON.stringify(u));if(firebaseConnected)saveUsersToFirebase(u);}
 async function doLogin(e){e.preventDefault();const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;let users=getUsers();if(firebaseConnected&&users.length===0){users=await loadUsersFromFirebase()||DEFAULT_USERS;}const found=users.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.password===p);if(found){currentUser={username:found.username,role:found.role};localStorage.setItem(KEYS.session,JSON.stringify(currentUser));document.getElementById('loginError').classList.remove('show');showApp();}else{document.getElementById('loginError').classList.add('show');}}
 function doLogout(){currentUser=null;localStorage.removeItem(KEYS.session);document.getElementById('loginPage').style.display='flex';document.getElementById('appContainer').style.display='none';}
-function showApp(){document.getElementById('loginPage').style.display='none';document.getElementById('appContainer').style.display='block';document.getElementById('userName').textContent=currentUser.username;document.getElementById('userRole').textContent=currentUser.role==='admin'?'Admin':'Operatore';document.getElementById('userRole').className='user-role-badge '+(currentUser.role==='admin'?'':'operatore');document.getElementById('btnAdminMenu').style.display=currentUser.role==='admin'?'flex':'none';document.getElementById('btnEventi').style.display=currentUser.role==='admin'?'inline-block':'none';loadLocal();if(firebaseConnected){setupFirebaseListeners();}else if(API_URL){sync();}setInterval(()=>{if(!firebaseConnected&&API_URL&&!syncing)sync();},30000);setupInfiniteScroll();}
+function showApp(){document.getElementById('loginPage').style.display='none';document.getElementById('appContainer').style.display='block';document.getElementById('userName').textContent=currentUser.username;document.getElementById('userRole').textContent=currentUser.role==='admin'?'Admin':'Operatore';document.getElementById('userRole').className='user-role-badge '+(currentUser.role==='admin'?'':'operatore');document.getElementById('btnAdminMenu').style.display=currentUser.role==='admin'?'flex':'none';loadLocal();if(firebaseConnected){setupFirebaseListeners();}else if(API_URL){sync();}setInterval(()=>{if(!firebaseConnected&&API_URL&&!syncing)sync();},30000);setupInfiniteScroll();}
 function toggleUserMenu(){document.querySelector('.user-menu').classList.toggle('open');}
 document.addEventListener('click',function(e){const menu=document.querySelector('.user-menu');if(menu&&!menu.contains(e.target)){menu.classList.remove('open');}});
 function loadLocal(){loadOverridesAndQueue();const c=localStorage.getItem(KEYS.clienti);if(c){clienti=JSON.parse(c);fillClienti();}const o=localStorage.getItem(KEYS.ordini);if(o){ordini=JSON.parse(o);render();}}
@@ -2431,36 +2436,41 @@ async function verificaOrdine(){const cl=document.getElementById('cardInput').va
   if(ds.includes('-')){let t=Date.parse(ds);if(!isNaN(t))return t;const p=ds.split('-');if(p.length>=3){const d=new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10));t=d.getTime();return isNaN(t)?0:t;}}
   return 0;};
 const ultimaRicarica=registro.filter(o=>String(o.cliente)===String(cl)&&(o.stato==='DONE'||o.statoFinale==='DONE')).sort((a,b)=>getTS(b)-getTS(a))[0];
+// Cerca anche negli eventi Firebase
+const mesiIt={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};
+const parseDataEvento=(e)=>{const d=e.dataOra||e.registratoIl||'';if(!d)return null;if(d.includes('T'))return new Date(d);const match=d.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{1,2}):(\d{2}):?(\d{2})?/i);if(match){const giorno=parseInt(match[1]);const mese=mesiIt[match[2].toLowerCase()];const anno=parseInt(match[3]);if(mese!==undefined)return new Date(anno,mese,giorno);}return null;};
+const eventiRicarica=eventi.filter(e=>{const tipoOrig=(e.evento||'').toLowerCase();return String(e.cliente)===String(cl)&&tipoOrig.includes('ricarica');}).map(e=>({...e,_dataEvento:parseDataEvento(e)})).filter(e=>e._dataEvento).sort((a,b)=>b._dataEvento-a._dataEvento);
+const ultimoEventoRicarica=eventiRicarica[0];
+// Trova la ricarica più recente tra registro ed eventi
+let dataRicRecente=null,fonteRicarica='',labelData='';
 if(ultimaRicarica){
   const dataStr=(ultimaRicarica.dataChiusura||ultimaRicarica.dataCreazione||'').toString().trim();
-  let dataRic=null;let dataLabel=dataStr||'';
   if(dataStr){
-    if(dataStr.includes('T')){
-      dataRic=new Date(dataStr);
-      if(!isNaN(dataRic.getTime())) dataLabel=dataRic.toLocaleDateString('it-IT');
-    } else if(dataStr.includes('/')){
-      const parts=dataStr.split('/');
-      if(parts.length===3){
-        dataRic=new Date(parseInt(parts[2],10),parseInt(parts[1],10)-1,parseInt(parts[0],10));
-      }
-    } else if(dataStr.includes('-')){
-      dataRic=new Date(dataStr);
-      if(!isNaN(dataRic.getTime())) dataLabel=dataRic.toLocaleDateString('it-IT');
-    }
+    if(dataStr.includes('T')){dataRicRecente=new Date(dataStr);}
+    else if(dataStr.includes('/')){const parts=dataStr.split('/');if(parts.length===3)dataRicRecente=new Date(parseInt(parts[2],10),parseInt(parts[1],10)-1,parseInt(parts[0],10));}
+    else if(dataStr.includes('-')){dataRicRecente=new Date(dataStr);}
+    if(dataRicRecente&&!isNaN(dataRicRecente.getTime())){labelData=dataRicRecente.toLocaleDateString('it-IT');fonteRicarica='registro';}
   }
-  if(dataRic && !isNaN(dataRic.getTime())){
-    const oggi=new Date();
-    const diffGiorni=Math.floor((oggi-dataRic)/(1000*60*60*24));
-    if(diffGiorni<30){
-      document.getElementById('warningText').textContent=`⚠️ Card ricaricata ${diffGiorni} giorni fa (${dataLabel})!`;
-      document.getElementById('warningContent').innerHTML=rows;
-      openModal('modalWarning');
-      return;
-    }
+}
+if(ultimoEventoRicarica&&ultimoEventoRicarica._dataEvento){
+  if(!dataRicRecente||ultimoEventoRicarica._dataEvento>dataRicRecente){
+    dataRicRecente=ultimoEventoRicarica._dataEvento;labelData=dataRicRecente.toLocaleDateString('it-IT');fonteRicarica='eventi';
+  }
+}
+if(dataRicRecente&&!isNaN(dataRicRecente.getTime())){
+  const oggi=new Date();
+  const diffGiorni=Math.floor((oggi-dataRicRecente)/(1000*60*60*24));
+  if(diffGiorni<30){
+    const fonteLabel=fonteRicarica==='eventi'?'(da Eventi Firebase)':'(da Registro)';
+    document.getElementById('warningText').textContent=`⚠️ Card già ricaricata ${diffGiorni} giorni fa! ${fonteLabel}`;
+    document.getElementById('warningContent').innerHTML=rows+`<div style="margin-top:12px;padding:10px;border-radius:10px;background:rgba(251,146,60,0.2);border:1px solid rgba(251,146,60,0.4);font-size:0.9em"><b>Ultima ricarica:</b> ${labelData}</div>`;
+    setWarningMode('ricarica');
+    openModal('modalWarning');
+    return;
   }
 }
 openModal('modalConferma');}
-function inviaOrdine(){const cl=document.getElementById('cardInput').value.trim();closeModal('modalConferma');closeModal('modalWarning');const lid='L'+(++localId),now=new Date(),nuovo={id:lid,localId:lid,cliente:cl,keycard:clienti.find(c=>c.numero===cl)?.keycard||'',importo:importo,dataCreazione:now.toLocaleDateString('it-IT'),oraCreazione:now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),scadenzaOre:scadenza,stato:'PENDING',localOnly:true,creatoDa:currentUser.username};ordini.unshift(nuovo);saveLocal();render();document.getElementById('cardInput').value='';showAlert(`Ordine inserito! Card: ${cl}`,'success');if(firebaseConnected){setSyncing(true);firebaseNuovoOrdine({cliente:cl,keycard:nuovo.keycard,importo:importo,dataCreazione:nuovo.dataCreazione,oraCreazione:nuovo.oraCreazione,scadenzaOre:scadenza,stato:'PENDING',creatoDa:currentUser.username}).then(r=>{if(r&&r.ordine){const firebaseId=r.ordine.id;const i=ordini.findIndex(o=>o.localId===lid);if(i!==-1){ordini[i].id=firebaseId;ordini[i].localOnly=false;saveLocal();render();}if(API_URL){apiGet('nuovoOrdine',{id:firebaseId,cliente:cl,importo:importo,scadenza:scadenza,creatoDa:currentUser.username}).catch(e=>console.log('Backup Sheets:',e));}}setSyncing(false);}).catch(e=>{setSyncing(false);console.error('Firebase error:',e);});}else if(API_URL){setSyncing(true);apiGet('nuovoOrdine',{cliente:cl,importo:importo,scadenza:scadenza,creatoDa:currentUser.username}).then(r=>{if(r.ordine){const i=ordini.findIndex(o=>o.localId===lid);if(i!==-1){ordini[i].id=r.ordine.id;ordini[i].localOnly=false;saveLocal();render();}}setSyncing(false);}).catch(e=>{setSyncing(false);});}}
+function inviaOrdine(){const cl=document.getElementById('cardInput').value.trim();closeModal('modalConferma');closeModal('modalWarning');const lid='L'+(++localId),now=new Date(),nuovo={id:lid,localId:lid,cliente:cl,keycard:clienti.find(c=>c.numero===cl)?.keycard||'',importo:importo,dataCreazione:now.toLocaleDateString('it-IT'),oraCreazione:now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),scadenzaOre:scadenza,stato:'PENDING',localOnly:true,creatoDa:currentUser.username};ordini.unshift(nuovo);saveLocal();render();document.getElementById('cardInput').value='';showAlert(`Ordine inserito! Card: ${cl}`,'success');if(firebaseConnected){setSyncing(true);firebaseNuovoOrdine({cliente:cl,keycard:nuovo.keycard,importo:importo,dataCreazione:nuovo.dataCreazione,oraCreazione:nuovo.oraCreazione,scadenzaOre:scadenza,stato:'PENDING',creatoDa:currentUser.username}).then(r=>{if(r&&r.ordine){const firebaseId=r.ordine.id;const i=ordini.findIndex(o=>o.localId===lid);if(i!==-1){ordini[i].id=firebaseId;ordini[i].localOnly=false;saveLocal();render();}if(API_URL){apiGet('nuovoOrdine',{id:firebaseId,cliente:cl,importo:importo,scadenza:scadenza,creatoDa:currentUser.username}).catch(e=>console.log('Backup Sheets:',e));}}setSyncing(false);}).catch(e=>{setSyncing(false);console.error('Firebase error:',e);});}else if(API_URL){setSyncing(true);apiGet('nuovoOrdine',{cliente:cl,importo:importo,scadenza:scadenza,creatoDa:currentUser.username}).then(r=>{if(r.ordine){const i=ordini.findIndex(o=>o.localId===lid);if(i!==-1){ordini[i].id=r.ordine.id;ordini[i].localOnly=false;saveLocal();render();}}setSyncing(false);}).catch(e=>{setSyncing(false);})}}
 function formatData(d){if(!d)return'';if(typeof d==='string'&&d.includes('T')){const dt=new Date(d);return dt.toLocaleDateString('it-IT');}return d;}
 function parseDataOra(data,ora){if(!data||!ora)return null;let d,m,y;if(typeof data==='string'&&data.includes('T')){const dt=new Date(data);d=dt.getDate();m=dt.getMonth();y=dt.getFullYear();}else if(typeof data==='string'&&data.includes('/')){const parts=data.split('/');d=parseInt(parts[0]);m=parseInt(parts[1])-1;y=parseInt(parts[2]);}else{return null;}const [hh,mm]=ora.split(':').map(Number);return new Date(y,m,d,hh,mm);}
 function getCountdown(o){if(!o.dataCreazione||!o.oraCreazione||!o.scadenzaOre)return null;const created=parseDataOra(o.dataCreazione,o.oraCreazione);if(!created)return null;const scadenza=new Date(created.getTime()+o.scadenzaOre*60*60*1000);const now=new Date();const diff=scadenza-now;if(diff<=0)return{text:'Scaduto!',expired:true};const h=Math.floor(diff/(1000*60*60));const m=Math.floor((diff%(1000*60*60))/(1000*60));const s=Math.floor((diff%(1000*60))/1000);return{text:`${h}h ${m}m ${s}s`,expired:false};}

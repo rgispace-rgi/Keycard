@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v100</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v101</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -30,6 +30,55 @@
             --text-primary: rgba(255, 255, 255, 0.95);
             --text-secondary: rgba(148, 163, 184, 0.9);
         }
+
+        /* === LITE MODE - Disabilita effetti pesanti === */
+        html.lite-mode {
+            --blur-amount: 0px !important;
+            --blur-light: 0px !important;
+        }
+        html.lite-mode *,
+        html.lite-mode *::before,
+        html.lite-mode *::after {
+            animation: none !important;
+            transition: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        html.lite-mode body::before,
+        html.lite-mode body::after,
+        html.lite-mode .glass-card::before,
+        html.lite-mode .glass-card::after,
+        html.lite-mode .app-header::before,
+        html.lite-mode .app-header::after,
+        html.lite-mode .ordine-item::before,
+        html.lite-mode .filter-btn::before {
+            display: none !important;
+        }
+        html.lite-mode body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+        }
+        html.lite-mode .glass-card,
+        html.lite-mode .card,
+        html.lite-mode .header,
+        html.lite-mode .modal-content,
+        html.lite-mode .ordine-item,
+        html.lite-mode .filter-btn,
+        html.lite-mode .action-btn,
+        html.lite-mode .modal-btn,
+        html.lite-mode input,
+        html.lite-mode select {
+            background: rgba(30, 41, 59, 0.95) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        }
+        html.lite-mode .ordine-item.pending { background: rgba(139, 92, 246, 0.3) !important; }
+        html.lite-mode .ordine-item.in_progress { background: rgba(245, 158, 11, 0.3) !important; }
+        html.lite-mode .ordine-item.check { background: rgba(6, 182, 212, 0.3) !important; }
+        html.lite-mode .ordine-item.done { background: rgba(34, 197, 94, 0.3) !important; }
+        html.lite-mode .ordine-item.failed, html.lite-mode .ordine-item.canceled { background: rgba(239, 68, 68, 0.3) !important; }
+        html.lite-mode .ordine-item.expired { background: rgba(251, 146, 60, 0.3) !important; }
+        html.lite-mode .filter-btn.active { background: rgba(139, 92, 246, 0.5) !important; }
+        html.lite-mode .action-btn { background: linear-gradient(135deg, rgba(139, 92, 246, 0.7), rgba(109, 40, 217, 0.7)) !important; }
+        html.lite-mode .btn-submit { background: linear-gradient(135deg, rgba(74, 222, 128, 0.6), rgba(34, 197, 94, 0.6)) !important; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -738,6 +787,29 @@
                 rgba(255, 130, 130, 0.48) 100%);
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+        }
+        
+        .btn-lite {
+            padding: 8px 12px;
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            background: rgba(250, 204, 21, 0.15);
+            color: #fbbf24;
+            transition: all 0.2s ease;
+        }
+        .btn-lite:hover {
+            background: rgba(250, 204, 21, 0.25);
+            transform: scale(1.05);
+        }
+        .btn-lite.active {
+            background: rgba(250, 204, 21, 0.4);
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+        }
+        html.lite-mode .btn-lite {
+            background: rgba(250, 204, 21, 0.4) !important;
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5) !important;
         }
         
         .btn-admin { 
@@ -1766,6 +1838,7 @@
                     </div>
                 </div>
 <div class="header-right">
+                    <button class="btn-lite" id="btnLite" onclick="toggleLiteMode()" title="Modalità Lite (prestazioni)">⚡</button>
                     <div class="user-info"><span id="userName">-</span><span class="user-role" id="userRole">-</span></div>
                     <button class="btn-admin" id="btnAdmin" onclick="openModal('modalAdmin')" style="display:none">⚙️ Admin</button>
                     <button class="btn-logout" onclick="doLogout()">🚪 Esci</button>
@@ -2189,7 +2262,9 @@ function warningPrimaryAction(){
   }
   inviaOrdine();
 }
-document.addEventListener('DOMContentLoaded',async()=>{initFirebase();if(firebaseConnected){const fbUsers=await loadUsersFromFirebase();if(fbUsers&&fbUsers.length>0){localStorage.setItem(KEYS.users,JSON.stringify(fbUsers));}}if(!localStorage.getItem(KEYS.users))localStorage.setItem(KEYS.users,JSON.stringify(DEFAULT_USERS));const s=localStorage.getItem(KEYS.session);if(s){currentUser=JSON.parse(s);showApp();}});
+document.addEventListener('DOMContentLoaded',async()=>{applyLiteMode();initFirebase();if(firebaseConnected){const fbUsers=await loadUsersFromFirebase();if(fbUsers&&fbUsers.length>0){localStorage.setItem(KEYS.users,JSON.stringify(fbUsers));}}if(!localStorage.getItem(KEYS.users))localStorage.setItem(KEYS.users,JSON.stringify(DEFAULT_USERS));const s=localStorage.getItem(KEYS.session);if(s){currentUser=JSON.parse(s);showApp();}});
+function toggleLiteMode(){const isLite=document.documentElement.classList.toggle('lite-mode');localStorage.setItem('keycard_lite_mode',isLite?'1':'0');document.getElementById('btnLite').classList.toggle('active',isLite);showAlert(isLite?'⚡ Modalità Lite attivata':'✨ Effetti attivati','success');}
+function applyLiteMode(){const isLite=localStorage.getItem('keycard_lite_mode')==='1';if(isLite){document.documentElement.classList.add('lite-mode');setTimeout(()=>{const btn=document.getElementById('btnLite');if(btn)btn.classList.add('active');},100);}}
 function getUsers(){return JSON.parse(localStorage.getItem(KEYS.users)||'[]');}
 function saveUsers(u){localStorage.setItem(KEYS.users,JSON.stringify(u));if(firebaseConnected)saveUsersToFirebase(u);}
 async function doLogin(e){e.preventDefault();const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;let users=getUsers();if(firebaseConnected&&users.length===0){users=await loadUsersFromFirebase()||DEFAULT_USERS;}const found=users.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.password===p);if(found){currentUser={username:found.username,role:found.role};localStorage.setItem(KEYS.session,JSON.stringify(currentUser));document.getElementById('loginError').classList.remove('show');showApp();}else{document.getElementById('loginError').classList.add('show');}}

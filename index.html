@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v107</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v108</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2186,18 +2186,16 @@ function setupFirebaseListeners() {
     });
     unsubscribers.push(() => clientiRef.off('value'));
     
-    // Listener eventi (solo admin) - carica ultimi 1000 per ricerca
-    if (currentUser && currentUser.role === 'admin') {
-        const eventiRef = db.ref('eventi');
-        eventiRef.orderByChild('registratoIl').limitToLast(1000).on('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            eventi = Object.keys(data).map(id => ({...data[id], id}));
-            eventiHasMore = eventi.length >= 1000;
-            console.log('Firebase: aggiornamento eventi', eventi.length);
-            render();
-        });
-        unsubscribers.push(() => eventiRef.off('value'));
-    }
+    // Listener eventi - carica ultimi 1000 per ricerca (visibile a tutti)
+    const eventiRef = db.ref('eventi');
+    eventiRef.orderByChild('registratoIl').limitToLast(1000).on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        eventi = Object.keys(data).map(id => ({...data[id], id}));
+        eventiHasMore = eventi.length >= 1000;
+        console.log('Firebase: aggiornamento eventi', eventi.length);
+        render();
+    });
+    unsubscribers.push(() => eventiRef.off('value'));
 }
 
 // Firebase: Nuovo ordine

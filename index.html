@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v109</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v110</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2466,6 +2466,10 @@ if(dataRicRecente&&!isNaN(dataRicRecente.getTime())){
     openModal('modalWarning');
     return;
   }
+  // Più di 30 giorni fa - mostra info nella conferma
+  document.getElementById('confermaContent').innerHTML=rows+`<div style="margin-top:12px;padding:10px;border-radius:10px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);font-size:0.9em;color:#4ade80"><b>Ultima ricarica:</b> ${labelData} (${diffGiorni} giorni fa)</div>`;
+  openModal('modalConferma');
+  return;
 }
 openModal('modalConferma');}
 function inviaOrdine(){const cl=document.getElementById('cardInput').value.trim();closeModal('modalConferma');closeModal('modalWarning');const lid='L'+(++localId),now=new Date(),nuovo={id:lid,localId:lid,cliente:cl,keycard:clienti.find(c=>c.numero===cl)?.keycard||'',importo:importo,dataCreazione:now.toLocaleDateString('it-IT'),oraCreazione:now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),scadenzaOre:scadenza,stato:'PENDING',localOnly:true,creatoDa:currentUser.username};ordini.unshift(nuovo);saveLocal();render();document.getElementById('cardInput').value='';showAlert(`Ordine inserito! Card: ${cl}`,'success');if(firebaseConnected){setSyncing(true);firebaseNuovoOrdine({cliente:cl,keycard:nuovo.keycard,importo:importo,dataCreazione:nuovo.dataCreazione,oraCreazione:nuovo.oraCreazione,scadenzaOre:scadenza,stato:'PENDING',creatoDa:currentUser.username}).then(r=>{if(r&&r.ordine){const firebaseId=r.ordine.id;const i=ordini.findIndex(o=>o.localId===lid);if(i!==-1){ordini[i].id=firebaseId;ordini[i].localOnly=false;saveLocal();render();}if(API_URL){apiGet('nuovoOrdine',{id:firebaseId,cliente:cl,importo:importo,scadenza:scadenza,creatoDa:currentUser.username}).catch(e=>console.log('Backup Sheets:',e));}}setSyncing(false);}).catch(e=>{setSyncing(false);console.error('Firebase error:',e);});}else if(API_URL){setSyncing(true);apiGet('nuovoOrdine',{cliente:cl,importo:importo,scadenza:scadenza,creatoDa:currentUser.username}).then(r=>{if(r.ordine){const i=ordini.findIndex(o=>o.localId===lid);if(i!==-1){ordini[i].id=r.ordine.id;ordini[i].localOnly=false;saveLocal();render();}}setSyncing(false);}).catch(e=>{setSyncing(false);})}}

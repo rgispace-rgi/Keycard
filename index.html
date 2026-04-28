@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v111</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v112</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -620,6 +620,27 @@
         }
         
         .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        /* === BADGE STATO CENTRALINO === */
+        .centralino-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            margin-left:12px;
+            padding:6px 12px;
+            border-radius:14px;
+            font-size:13px;
+            font-weight:500;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+            white-space: nowrap;
+            cursor: default;
+        }
+        .centralino-badge.unknown{ background:rgba(128,128,128,0.25); color:#bbb; }
+        .centralino-badge.online{ background:rgba(34,197,94,0.2); color:#4ade80; border-color:rgba(34,197,94,0.4); }
+        .centralino-badge.offline{ background:rgba(239,68,68,0.2); color:#f87171; border-color:rgba(239,68,68,0.4); }
 
         /* === DESKTOP HEADER LAYOUT (single row, true centered logo panel) === */
         @media (min-width: 901px) {
@@ -1967,6 +1988,7 @@
             <div class="header">
                 <div class="header-left">
                     <h1>🔑 Ricarica KeyCard</h1>
+                    <span id="centralinoBadge" class="centralino-badge unknown" title="Stato centralino non ancora ricevuto">⚪ Lavanderia ?</span>
 </div>
                 
                 <div class="header-center">
@@ -2201,6 +2223,35 @@ function setupFirebaseListeners() {
         render();
     });
     unsubscribers.push(() => eventiRef.off('value'));
+
+    // Listener stato centralino (scritto dal bot v6.1+ su /sistema/centralino)
+    const centralinoRef = db.ref('sistema/centralino');
+    centralinoRef.on('value', (snapshot) => {
+        updateCentralinoBadge(snapshot.val());
+    });
+    unsubscribers.push(() => centralinoRef.off('value'));
+}
+
+// Aggiorna il badge "Lavanderia Online/Offline" in base al nodo Firebase /sistema/centralino
+function updateCentralinoBadge(data) {
+    const el = document.getElementById('centralinoBadge');
+    if (!el) return;
+    if (!data || typeof data.online === 'undefined') {
+        el.className = 'centralino-badge unknown';
+        el.textContent = '⚪ Lavanderia ?';
+        el.title = 'Stato centralino non ancora ricevuto';
+        return;
+    }
+    const ts = data.lastUpdate || data.lastChange || '';
+    if (data.online === true) {
+        el.className = 'centralino-badge online';
+        el.textContent = '🟢 Lavanderia Online';
+        el.title = ts ? `Aggiornato: ${ts}` : 'Online';
+    } else {
+        el.className = 'centralino-badge offline';
+        el.textContent = '🔴 Lavanderia Offline';
+        el.title = ts ? `Aggiornato: ${ts}` : 'Offline';
+    }
 }
 
 // Firebase: Nuovo ordine

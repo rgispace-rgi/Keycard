@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v112</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v113</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -626,7 +626,6 @@
             display:inline-flex;
             align-items:center;
             gap:6px;
-            margin-left:12px;
             padding:6px 12px;
             border-radius:14px;
             font-size:13px;
@@ -640,7 +639,33 @@
         }
         .centralino-badge.unknown{ background:rgba(128,128,128,0.25); color:#bbb; }
         .centralino-badge.online{ background:rgba(34,197,94,0.2); color:#4ade80; border-color:rgba(34,197,94,0.4); }
-        .centralino-badge.offline{ background:rgba(239,68,68,0.2); color:#f87171; border-color:rgba(239,68,68,0.4); }
+        .centralino-badge.offline{
+            background:rgba(239,68,68,0.2);
+            color:#f87171;
+            border-color:rgba(239,68,68,0.4);
+            animation: centralino-pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes centralino-pulse{
+            0%,100%{
+                box-shadow: 0 0 0 0 rgba(239,68,68,0.55), 0 0 8px rgba(239,68,68,0.4);
+                background:rgba(239,68,68,0.2);
+            }
+            50%{
+                box-shadow: 0 0 0 8px rgba(239,68,68,0), 0 0 18px rgba(239,68,68,0.85);
+                background:rgba(239,68,68,0.4);
+            }
+        }
+        .centralino-offline-warning{
+            margin-top:10px;
+            padding:10px 14px;
+            border-radius:12px;
+            background:rgba(239,68,68,0.12);
+            border:1px solid rgba(239,68,68,0.4);
+            color:#f87171;
+            font-size:13px;
+            font-weight:500;
+            text-align:center;
+        }
 
         /* === DESKTOP HEADER LAYOUT (single row, true centered logo panel) === */
         @media (min-width: 901px) {
@@ -1988,7 +2013,6 @@
             <div class="header">
                 <div class="header-left">
                     <h1>🔑 Ricarica KeyCard</h1>
-                    <span id="centralinoBadge" class="centralino-badge unknown" title="Stato centralino non ancora ricevuto">⚪ Lavanderia ?</span>
 </div>
                 
                 <div class="header-center">
@@ -2021,7 +2045,8 @@
                     <button class="btn-submit" onclick="verificaOrdine()">📤 INVIA ORDINE</button>
                 </div>
                 <div class="card">
-                    <div class="ordini-header"><div class="card-title" style="margin:0">📋 Ordini</div><div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncTxt">Sincronizzato</span></div></div>
+                    <div class="ordini-header"><div class="card-title" style="margin:0">📋 Ordini</div><span id="centralinoBadge" class="centralino-badge unknown" title="Stato centralino non ancora ricevuto">⚪ Lavanderia ?</span><div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncTxt">Sincronizzato</span></div></div>
+                    <div id="centralinoOfflineWarning" class="centralino-offline-warning" style="display:none">⚠️ Le ricariche potranno essere eseguite quando il centralino tornerà online</div>
                     <div class="filters"><button class="filter-btn active" onclick="setFilter('all')" data-f="all">Tutti (48h)</button><button class="filter-btn" onclick="setFilter('pending')" data-f="pending">Pendenti</button><button class="filter-btn" onclick="setFilter('registro')" data-f="registro">Registro</button><button class="filter-btn" onclick="setFilter('eventi')" data-f="eventi" id="btnEventi">Eventi</button><button class="filter-btn" onclick="toggleSearch()" id="btnSearch">🔍</button></div>
                     <div id="searchBox" style="display:none;margin-top:10px"><div style="display:flex;gap:8px"><input type="text" id="searchInput" placeholder="#8 lav asc :4" oninput="doSearch()" style="flex:1;padding:12px;border-radius:12px"><button onclick="clearSearch()" style="padding:12px 18px">✖</button></div><div id="searchHelp" style="margin-top:6px;font-size:0.75em;color:#64748b;line-height:1.4">💡 <b>#8</b>=card 8 | <b>lav</b>=lavatrice | <b>asc</b>=asciugatrice | <b>:4</b>=selezione 4 | <b>#8 lav</b>=combinazione</div><div id="searchFiltersRegistro" style="display:none;margin-top:10px"><div style="font-size:0.8em;color:#94a3b8;margin-bottom:6px">Filtra per stato:</div><div style="display:flex;flex-wrap:wrap;gap:6px"><label class="search-filter-chip"><input type="checkbox" value="done" onchange="updateSearchFilters()" checked><span>✅ DONE</span></label><label class="search-filter-chip"><input type="checkbox" value="canceled" onchange="updateSearchFilters()" checked><span>❌ CANCELED</span></label><label class="search-filter-chip"><input type="checkbox" value="failed" onchange="updateSearchFilters()" checked><span>⚠️ FAILED</span></label><label class="search-filter-chip"><input type="checkbox" value="expired" onchange="updateSearchFilters()" checked><span>⏰ EXPIRED</span></label></div></div><div id="searchFiltersEventi" style="display:none;margin-top:10px"><div style="font-size:0.8em;color:#94a3b8;margin-bottom:6px">Filtra per tipo:</div><div style="display:flex;flex-wrap:wrap;gap:6px"><label class="search-filter-chip green"><input type="checkbox" value="ricarica" onchange="updateSearchFilters()" checked><span>💰 Ricarica</span></label><label class="search-filter-chip red"><input type="checkbox" value="scarico" onchange="updateSearchFilters()" checked><span>📤 Scarico</span></label><label class="search-filter-chip purple"><input type="checkbox" value="vendita" onchange="updateSearchFilters()" checked><span>🧺 Utilizzo</span></label><label class="search-filter-chip blue"><input type="checkbox" value="altro" onchange="updateSearchFilters()" checked><span>📊 Altro</span></label></div></div><div style="margin-top:8px;display:flex;align-items:center;gap:8px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85em;color:#94a3b8"><input type="checkbox" id="searchAllTimeCheck" onchange="toggleSearchAllTime()" style="width:18px;height:18px;cursor:pointer"><span>Cerca su tutto (default: ultimi 30 giorni)</span></label></div></div>
                     <div class="ordini-list" id="ordiniList"><div class="empty-state"><div class="empty-icon">📂</div><p>Nessun ordine</p></div></div>
@@ -2235,11 +2260,13 @@ function setupFirebaseListeners() {
 // Aggiorna il badge "Lavanderia Online/Offline" in base al nodo Firebase /sistema/centralino
 function updateCentralinoBadge(data) {
     const el = document.getElementById('centralinoBadge');
+    const warn = document.getElementById('centralinoOfflineWarning');
     if (!el) return;
     if (!data || typeof data.online === 'undefined') {
         el.className = 'centralino-badge unknown';
         el.textContent = '⚪ Lavanderia ?';
         el.title = 'Stato centralino non ancora ricevuto';
+        if (warn) warn.style.display = 'none';
         return;
     }
     const ts = data.lastUpdate || data.lastChange || '';
@@ -2247,10 +2274,12 @@ function updateCentralinoBadge(data) {
         el.className = 'centralino-badge online';
         el.textContent = '🟢 Lavanderia Online';
         el.title = ts ? `Aggiornato: ${ts}` : 'Online';
+        if (warn) warn.style.display = 'none';
     } else {
         el.className = 'centralino-badge offline';
         el.textContent = '🔴 Lavanderia Offline';
         el.title = ts ? `Aggiornato: ${ts}` : 'Offline';
+        if (warn) warn.style.display = 'block';
     }
 }
 

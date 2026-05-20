@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v113</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v114</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2047,7 +2047,7 @@
                 <div class="card">
                     <div class="ordini-header"><div class="card-title" style="margin:0">📋 Ordini</div><span id="centralinoBadge" class="centralino-badge unknown" title="Stato centralino non ancora ricevuto">⚪ Lavanderia ?</span><div class="sync-status"><div class="sync-dot" id="syncDot"></div><span id="syncTxt">Sincronizzato</span></div></div>
                     <div id="centralinoOfflineWarning" class="centralino-offline-warning" style="display:none">⚠️ Le ricariche potranno essere eseguite quando il centralino tornerà online</div>
-                    <div class="filters"><button class="filter-btn active" onclick="setFilter('all')" data-f="all">Tutti (48h)</button><button class="filter-btn" onclick="setFilter('pending')" data-f="pending">Pendenti</button><button class="filter-btn" onclick="setFilter('registro')" data-f="registro">Registro</button><button class="filter-btn" onclick="setFilter('eventi')" data-f="eventi" id="btnEventi">Eventi</button><button class="filter-btn" onclick="toggleSearch()" id="btnSearch">🔍</button></div>
+                    <div class="filters"><button class="filter-btn active" onclick="setFilter('all')" data-f="all">Tutti (48h)</button><button class="filter-btn" onclick="setFilter('pending')" data-f="pending">Pendenti</button><button class="filter-btn" onclick="setFilter('registro')" data-f="registro">Registro</button><button class="filter-btn" onclick="setFilter('eventi')" data-f="eventi" id="btnEventi">Eventi</button><button class="filter-btn" onclick="setFilter('card')" data-f="card" id="btnCard">💳 Card</button><button class="filter-btn" onclick="toggleSearch()" id="btnSearch">🔍</button></div>
                     <div id="searchBox" style="display:none;margin-top:10px"><div style="display:flex;gap:8px"><input type="text" id="searchInput" placeholder="#8 lav asc :4" oninput="doSearch()" style="flex:1;padding:12px;border-radius:12px"><button onclick="clearSearch()" style="padding:12px 18px">✖</button></div><div id="searchHelp" style="margin-top:6px;font-size:0.75em;color:#64748b;line-height:1.4">💡 <b>#8</b>=card 8 | <b>lav</b>=lavatrice | <b>asc</b>=asciugatrice | <b>:4</b>=selezione 4 | <b>#8 lav</b>=combinazione</div><div id="searchFiltersRegistro" style="display:none;margin-top:10px"><div style="font-size:0.8em;color:#94a3b8;margin-bottom:6px">Filtra per stato:</div><div style="display:flex;flex-wrap:wrap;gap:6px"><label class="search-filter-chip"><input type="checkbox" value="done" onchange="updateSearchFilters()" checked><span>✅ DONE</span></label><label class="search-filter-chip"><input type="checkbox" value="canceled" onchange="updateSearchFilters()" checked><span>❌ CANCELED</span></label><label class="search-filter-chip"><input type="checkbox" value="failed" onchange="updateSearchFilters()" checked><span>⚠️ FAILED</span></label><label class="search-filter-chip"><input type="checkbox" value="expired" onchange="updateSearchFilters()" checked><span>⏰ EXPIRED</span></label></div></div><div id="searchFiltersEventi" style="display:none;margin-top:10px"><div style="font-size:0.8em;color:#94a3b8;margin-bottom:6px">Filtra per tipo:</div><div style="display:flex;flex-wrap:wrap;gap:6px"><label class="search-filter-chip green"><input type="checkbox" value="ricarica" onchange="updateSearchFilters()" checked><span>💰 Ricarica</span></label><label class="search-filter-chip red"><input type="checkbox" value="scarico" onchange="updateSearchFilters()" checked><span>📤 Scarico</span></label><label class="search-filter-chip purple"><input type="checkbox" value="vendita" onchange="updateSearchFilters()" checked><span>🧺 Utilizzo</span></label><label class="search-filter-chip blue"><input type="checkbox" value="altro" onchange="updateSearchFilters()" checked><span>📊 Altro</span></label></div></div><div style="margin-top:8px;display:flex;align-items:center;gap:8px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85em;color:#94a3b8"><input type="checkbox" id="searchAllTimeCheck" onchange="toggleSearchAllTime()" style="width:18px;height:18px;cursor:pointer"><span>Cerca su tutto (default: ultimi 30 giorni)</span></label></div></div>
                     <div class="ordini-list" id="ordiniList"><div class="empty-state"><div class="empty-icon">📂</div><p>Nessun ordine</p></div></div>
                 </div>
@@ -2060,6 +2060,7 @@
     <div class="modal-overlay" id="modalDettaglio"><div class="modal"><div class="modal-title" id="dettaglioTitle">📋 Ordine</div><div id="dettaglioContent"></div><div class="modal-buttons" id="dettaglioBtn"></div></div></div>
     <div class="modal-overlay" id="modalAnnulla"><div class="modal"><div class="modal-title">⚠️ Annullare?</div><div id="annullaContent"></div><div class="modal-buttons"><button class="modal-btn modal-btn-cancel" onclick="closeModal('modalAnnulla')">No</button><button class="modal-btn modal-btn-danger" onclick="eseguiAnnulla()">Sì, Annulla</button></div></div></div>
     <div class="modal-overlay" id="modalEditUser"><div class="modal"><div class="modal-title">✏️ Modifica Utente</div><div class="form-group"><label>Username</label><input type="text" id="editUser"></div><div class="form-group"><label>Nuova Password (vuoto = non cambia)</label><input type="password" id="editPass"></div><div class="form-group"><label>Ruolo</label><select id="editRole"><option value="operatore">Operatore</option><option value="admin">Amministratore</option></select></div><div class="modal-buttons"><button class="modal-btn modal-btn-cancel" onclick="closeModal('modalEditUser')">Annulla</button><button class="modal-btn modal-btn-confirm" onclick="saveUserEdit()">💾 Salva</button></div></div></div>
+    <div class="modal-overlay" id="modalCard"><div class="modal" style="max-width:600px;max-height:90vh;position:relative;display:flex;flex-direction:column;overflow:hidden"><button onclick="closeModal('modalCard')" title="Chiudi" style="position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#fff;font-size:1.1em;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2">✕</button><div class="modal-title" id="cardDetailTitle" style="text-align:center;color:#fff;font-weight:bold;flex-shrink:0">Card</div><div id="cardDetailContent" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden"></div></div></div>
 <script>
 const KEYS={users:'kc_users',api:'kc_api',session:'kc_session',ordini:'kc_ordini',clienti:'kc_clienti',overrides:'kc_overrides',opqueue:'kc_opqueue',firebase:'kc_firebase'};
 let overrides={}; // { [idOrdine]: {stato, meta, ts, tries} }
@@ -2567,7 +2568,216 @@ setInterval(renderCountdowns,1000);
 function showDettaglio(o){selOrdine=o;detailCountdownInterval=true;const displayId=o.localOnly?'...':(parseInt(String(o.id).replace(/\D/g,''))||o.id);const cd=getCountdown(o);const cdHtml=(o.stato==='PENDING'||o.stato==='IN_PROGRESS'||o.stato==='CHECK'||!o.stato)&&cd?`<div style="text-align:center;padding:14px;margin-bottom:18px;background:rgba(0,0,0,0.3);border-radius:14px;border:1px solid rgba(255,255,255,0.1)"><span style="color:#94a3b8">⏱️ Scade tra: </span><span id="detailCountdown" class="countdown-timer" style="font-size:1.3em;font-weight:bold;color:${cd.expired?'#ef4444':'#fbbf24'}">${cd.text}</span></div>`:'';document.getElementById('dettaglioTitle').textContent=`📋 Ordine #${displayId}`;let c=cdHtml+`<div class="modal-row"><span class="modal-label">Card:</span><span class="modal-value">${o.cliente}</span></div><div class="modal-row"><span class="modal-label">Importo:</span><span class="modal-value">€${o.importo}</span></div><div class="modal-row"><span class="modal-label">Stato:</span><span class="modal-value">${o.stato||'PENDING'}</span></div><div class="modal-row"><span class="modal-label">Creato:</span><span class="modal-value">${formatData(o.dataCreazione)} ${o.oraCreazione||''}</span></div><div class="modal-row"><span class="modal-label">Creato da:</span><span class="modal-value">${o.creatoDa||'-'}</span></div><div class="modal-row"><span class="modal-label">Scadenza:</span><span class="modal-value">${o.scadenzaOre||'-'}h</span></div>`;if(o.stato==='DONE'||o.stato==='EXPIRED'||o.stato==='FAILED'){c+=`<div class="modal-row"><span class="modal-label">Chiuso:</span><span class="modal-value">${formatData(o.dataChiusura)||'-'} ${o.oraChiusura||''}</span></div>`;if(o.chiusoDa)c+=`<div class="modal-row"><span class="modal-label">Chiuso da:</span><span class="modal-value">${o.chiusoDa}</span></div>`;}if(o.stato==='CANCELED'){c+=`<div class="modal-row"><span class="modal-label">Cancellato:</span><span class="modal-value">${formatData(o.dataCancellazione)||''} ${o.oraCancellazione||''}</span></div><div class="modal-row"><span class="modal-label">Cancellato da:</span><span class="modal-value">${o.cancellatoDa||'-'}</span></div>`;}if(o.note)c+=`<div class="modal-row"><span class="modal-label">Note:</span><span class="modal-value">${o.note}</span></div>`;if(o.credito)c+=`<div class="modal-row"><span class="modal-label">Credito:</span><span class="modal-value">€${o.credito}</span></div>`;if(o.localOnly)c+=`<div class="modal-row"><span class="modal-label">⚠️</span><span class="modal-value" style="color:#f59e0b">In attesa sync</span></div>`;document.getElementById('dettaglioContent').innerHTML=c;let btn='<button class="modal-btn modal-btn-cancel" onclick="closeModal(\'modalDettaglio\');detailCountdownInterval=false;">Chiudi</button>';if((o.stato||'PENDING')==='PENDING')btn+='<button class="modal-btn modal-btn-danger" onclick="confAnnulla()">❌ Annulla</button>';document.getElementById('dettaglioBtn').innerHTML=btn;openModal('modalDettaglio');}
 function confAnnulla(){closeModal('modalDettaglio');const displayId=parseInt(String(selOrdine.id).replace(/\D/g,''))||selOrdine.id;document.getElementById('annullaContent').innerHTML=`<div class="modal-row"><span class="modal-label">ID:</span><span class="modal-value">${displayId}</span></div><div class="modal-row"><span class="modal-label">Card:</span><span class="modal-value">${selOrdine.cliente}</span></div>`;openModal('modalAnnulla');}
 function eseguiAnnulla(){closeModal('modalAnnulla');const ordineId=selOrdine?.id;const i=ordini.findIndex(o=>String(o.id)===String(selOrdine.id)||(o.localId&&String(o.localId)===String(selOrdine.localId)));const now=new Date();if(i!==-1){ordini[i].stato='CANCELED';ordini[i].cancellatoDa=currentUser.username;ordini[i].dataCancellazione=now.toLocaleDateString('it-IT');ordini[i].oraCancellazione=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});saveLocal();render();showAlert('Ordine annullato','success');}else{showAlert('Errore: ordine non trovato','error');}if(selOrdine&&!selOrdine.localOnly){const meta={cancellatoDa:currentUser.username,dataCancellazione:now.toLocaleDateString('it-IT'),oraCancellazione:now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})};setOverride(ordineId,'CANCELED',meta);if(firebaseConnected){firebaseAnnullaOrdine(ordineId,currentUser.username).then(()=>{clearOverride(ordineId);if(API_URL){apiGet('annullaOrdine',{idOrdine:ordineId,cancellatoDa:currentUser.username}).then(r=>console.log('Sheets annullato:',r)).catch(e=>console.log('Sheets error:',e));}}).catch(e=>{console.error('Firebase annulla error:',e);opQueue.push({type:'annullaOrdine',payload:{idOrdine:ordineId,cancellatoDa:currentUser.username},orderId:ordineId,desiredState:'CANCELED',ts:Date.now(),tries:0});saveOverridesAndQueue();processQueue();});}else{opQueue.push({type:'annullaOrdine',payload:{idOrdine:ordineId,cancellatoDa:currentUser.username},orderId:ordineId,desiredState:'CANCELED',ts:Date.now(),tries:0});saveOverridesAndQueue();processQueue();}}selOrdine=null;}
-function render(){const cont=document.getElementById('ordiniList');const now=new Date();const giorni30=30*24*60*60*1000;const mesiIt={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};const parseDataEvento=(e)=>{const d=e.dataOra||e.registratoIl||'';if(!d)return null;if(d.includes('T'))return new Date(d);const match=d.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{1,2}):(\d{2}):?(\d{2})?/i);if(match){const giorno=parseInt(match[1]);const mese=mesiIt[match[2].toLowerCase()];const anno=parseInt(match[3]);const ora=parseInt(match[4])||0;const min=parseInt(match[5])||0;const sec=parseInt(match[6])||0;if(mese!==undefined)return new Date(anno,mese,giorno,ora,min,sec);}return null;};const parseDataOrdine=(o)=>{const ds=o.dataChiusura||o.dataCreazione||'';const ts=o.oraChiusura||o.oraCreazione||'00:00';let d=null;if(ds.includes('T')){d=new Date(ds);}else if(ds.includes('/')){const p=ds.split('/');d=new Date(p[2],p[1]-1,p[0]);}else if(ds.includes('-')){d=new Date(ds);}if(d&&ts){const tm=ts.match(/(\d{1,2}):(\d{2})/);if(tm)d.setHours(parseInt(tm[1]),parseInt(tm[2]));}return d;};if(filter==='eventi'){let list=eventi.filter(e=>{const tipoOrig=(e.evento||'').toLowerCase();return !tipoOrig.includes('righe di log');}).filter(matchSearch);list=list.filter(e=>{const tipoOrig=(e.evento||'').toLowerCase();if(tipoOrig.includes('ricarica'))return searchFiltersEventi.includes('ricarica');if(tipoOrig.includes('scarico'))return searchFiltersEventi.includes('scarico');if(tipoOrig.includes('vendita'))return searchFiltersEventi.includes('vendita');return searchFiltersEventi.includes('altro');});if(searchText&&!searchAllTime){list=list.filter(e=>{const d=parseDataEvento(e);return d&&(now-d)<giorni30;});}list.sort((a,b)=>{const dA=parseDataEvento(a);const dB=parseDataEvento(b);if(!dA&&!dB)return 0;if(!dA)return 1;if(!dB)return -1;return dB-dA;});const totale=list.length;eventiHasMore=eventiLoaded<totale;list=list.slice(0,eventiLoaded);if(!list.length){cont.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>'+(searchText?'Nessun risultato'+(searchAllTime?'':' (ultimi 30gg)'):'Nessun evento')+'</p></div>';return;}let html=list.map(e=>{const tipoOrig=(e.evento||'').toLowerCase();const credIni=parseFloat(e.creditoIniziale)||0;const valRic=parseFloat(e.valoreRicarica)||0;const prezzoSel=parseFloat(e.prezzoSelezione)||0;const selezioni=parseInt(e.selezioni)||0;let tipoDisplay='',bgColor='rgba(59,130,246,0.2)',borderColor='#3b82f6',creditoRimanente=0;const isManuale=tipoOrig.includes('manuale')&&!tipoOrig.includes('sherlock');if(tipoOrig.includes('ricarica')){tipoDisplay=isManuale?'📊 Ricarica Key/Card Manuale':'📊 Ricarica Key/Card Web';bgColor='rgba(34,197,94,0.2)';borderColor='#22c55e';creditoRimanente=credIni+valRic;return `<div class="ordine-item evento-ricarica" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">${tipoDisplay}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap"><div><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span style="margin-left:8px">💰 €${valRic}</span><span style="margin-left:8px">🔑 ${e.keycard||'-'}</span></div><div style="color:#22c55e;font-weight:bold">Credito €${creditoRimanente}</div></div></div>`;}else if(tipoOrig.includes('scarico')){tipoDisplay=isManuale?'📊 Scarico Key/Card Manuale':'📊 Scarico Key/Card Web';bgColor='rgba(239,68,68,0.2)';borderColor='#ef4444';creditoRimanente=0;return `<div class="ordine-item evento-scarico" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">${tipoDisplay}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap"><div><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span style="margin-left:8px">🔑 ${e.keycard||'-'}</span></div><div style="color:#ef4444;font-weight:bold">Credito €${creditoRimanente}</div></div></div>`;}else if(tipoOrig.includes('vendita')){const isLavatrice=(selezioni===1||selezioni===3);const isAsciugatrice=(selezioni===2||selezioni===4);let iconDevice='📊';if(isLavatrice){tipoDisplay=`🧺 Utilizzo Lavatrice N: ${selezioni}`;iconDevice='🧺';}else if(isAsciugatrice){tipoDisplay=`🌀 Utilizzo Asciugatrice N: ${selezioni}`;iconDevice='🌀';}else{tipoDisplay='📊 Utilizzo Device';iconDevice='📊';}bgColor='rgba(168,85,247,0.2)';borderColor='#a855f7';creditoRimanente=credIni-prezzoSel;return `<div class="ordine-item evento-vendita" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">${tipoDisplay}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap"><div><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span style="margin-left:8px">💵 €${prezzoSel}</span><span style="margin-left:8px">🔑 ${e.keycard||'-'}</span></div><div style="color:#a855f7;font-weight:bold">Credito €${creditoRimanente}</div></div></div>`;}else{return `<div class="ordine-item evento-altro" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">📊 ${e.evento||''}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info"><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span>🔑 ${e.keycard||'-'}</span><span>📍 ${e.sede||e.device||'-'}</span></div></div>`;}}).join('');if(eventiHasMore){html+=`<div id="loadMoreTrigger" style="text-align:center;padding:20px;color:#94a3b8"><span class="loading-spinner">⏳</span> Scorri per caricare altri...</div>`;}cont.innerHTML=html;return;}if(filter==='registro'){let list=[...registro].filter(matchSearch);list=list.filter(o=>{const st=(o.stato||o.statoFinale||'').toLowerCase();return searchFiltersRegistro.includes(st);});if(searchText&&!searchAllTime){list=list.filter(o=>{const d=parseDataOrdine(o);return d&&(now-d)<giorni30;});}const totale=list.length;registroHasMore=registroLoaded<totale;list=list.slice(0,registroLoaded);if(!list.length){cont.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>'+(searchText?'Nessun risultato'+(searchAllTime?'':' (ultimi 30gg)'):'Nessun ordine nel registro')+'</p></div>';return;}let html=list.map(o=>{const st=(o.stato||o.statoFinale||'').toLowerCase();const displayId=parseInt(String(o.id).replace(/\D/g,''))||o.id;return `<div class="ordine-item ${st}" onclick='showDettaglio(${JSON.stringify(o)})'><div class="ordine-head"><span class="ordine-id">#${displayId}</span><span class="ordine-stato stato-${st}">${o.stato||o.statoFinale||''}</span></div><div class="ordine-info"><span style="font-size:1.3em;font-weight:bold;color:#fff">💳 ${o.cliente}</span><span>💰 €${o.importo}</span><span>📅 ${formatData(o.dataChiusura)||''} ${o.oraChiusura||''}</span><span>✍️ ${o.creatoDa||'-'}</span></div></div>`;}).join('');if(registroHasMore){html+=`<div id="loadMoreTrigger" style="text-align:center;padding:20px;color:#94a3b8"><span class="loading-spinner">⏳</span> Scorri per caricare altri...</div>`;}cont.innerHTML=html;return;}const h48=48*60*60*1000;let list=[];if(filter==='all'){const registroRecente=registro.filter(o=>{const d=parseDataOrdine(o);return d&&(now-d)<h48;}).map(o=>({...o,_fromRegistro:true}));list=[...ordini,...registroRecente].filter(matchSearch);}else if(filter==='pending'){list=[...ordini].filter(matchSearch).filter(o=>['PENDING','IN_PROGRESS','CHECK'].includes(o.stato||'PENDING'));}else{list=[...ordini].filter(matchSearch);}list.sort((a,b)=>{if(a.localOnly&&!b.localOnly)return -1;if(!a.localOnly&&b.localOnly)return 1;const dA=parseDataOrdine(a)||new Date(0);const dB=parseDataOrdine(b)||new Date(0);return dB-dA;});if(!list.length){cont.innerHTML='<div class="empty-state"><div class="empty-icon">📂</div><p>'+(searchText?'Nessun risultato':'Nessun ordine')+'</p></div>';return;}cont.innerHTML=list.map(o=>{const st=(o.stato||o.statoFinale||'PENDING').toLowerCase();const displayId=o.localOnly?'...':parseInt(String(o.id).replace(/\D/g,''))||o.id;const cd=getCountdown(o);const showCd=(st==='pending'||st==='in_progress'||st==='check');const cdHtml=showCd&&cd?`<span>⏱️ <span class="countdown-timer" data-id="${o.id||o.localId}" style="color:${cd.expired?'#ef4444':'#fbbf24'}">${cd.text}</span></span>`:'';const dataDisplay=o._fromRegistro?`📅 ${formatData(o.dataChiusura)||''} ${o.oraChiusura||''}`:`🕐 ${o.oraCreazione||''}`;return `<div class="ordine-item ${st} ${o.localOnly?'local-only':''}" onclick='showDettaglio(${JSON.stringify(o)})'><div class="ordine-head"><span class="ordine-id">#${displayId}</span><span class="ordine-stato stato-${st}">${o.stato||o.statoFinale||'PENDING'}</span></div><div class="ordine-info"><span style="font-size:1.3em;font-weight:bold;color:#fff">💳 ${o.cliente}</span><span>💰 €${o.importo}</span><span>${dataDisplay}</span><span>✍️ ${o.creatoDa||'-'}</span>${cdHtml}</div></div>`;}).join('');}
+function render(){const cont=document.getElementById('ordiniList');const now=new Date();const giorni30=30*24*60*60*1000;const mesiIt={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};const parseDataEvento=(e)=>{const d=e.dataOra||e.registratoIl||'';if(!d)return null;if(d.includes('T'))return new Date(d);const match=d.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{1,2}):(\d{2}):?(\d{2})?/i);if(match){const giorno=parseInt(match[1]);const mese=mesiIt[match[2].toLowerCase()];const anno=parseInt(match[3]);const ora=parseInt(match[4])||0;const min=parseInt(match[5])||0;const sec=parseInt(match[6])||0;if(mese!==undefined)return new Date(anno,mese,giorno,ora,min,sec);}return null;};const parseDataOrdine=(o)=>{const ds=o.dataChiusura||o.dataCreazione||'';const ts=o.oraChiusura||o.oraCreazione||'00:00';let d=null;if(ds.includes('T')){d=new Date(ds);}else if(ds.includes('/')){const p=ds.split('/');d=new Date(p[2],p[1]-1,p[0]);}else if(ds.includes('-')){d=new Date(ds);}if(d&&ts){const tm=ts.match(/(\d{1,2}):(\d{2})/);if(tm)d.setHours(parseInt(tm[1]),parseInt(tm[2]));}return d;};if(filter==='card'){renderListaCard();return;}if(filter==='eventi'){let list=eventi.filter(e=>{const tipoOrig=(e.evento||'').toLowerCase();return !tipoOrig.includes('righe di log');}).filter(matchSearch);list=list.filter(e=>{const tipoOrig=(e.evento||'').toLowerCase();if(tipoOrig.includes('ricarica'))return searchFiltersEventi.includes('ricarica');if(tipoOrig.includes('scarico'))return searchFiltersEventi.includes('scarico');if(tipoOrig.includes('vendita'))return searchFiltersEventi.includes('vendita');return searchFiltersEventi.includes('altro');});if(searchText&&!searchAllTime){list=list.filter(e=>{const d=parseDataEvento(e);return d&&(now-d)<giorni30;});}list.sort((a,b)=>{const dA=parseDataEvento(a);const dB=parseDataEvento(b);if(!dA&&!dB)return 0;if(!dA)return 1;if(!dB)return -1;return dB-dA;});const totale=list.length;eventiHasMore=eventiLoaded<totale;list=list.slice(0,eventiLoaded);if(!list.length){cont.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>'+(searchText?'Nessun risultato'+(searchAllTime?'':' (ultimi 30gg)'):'Nessun evento')+'</p></div>';return;}let html=list.map(e=>{const tipoOrig=(e.evento||'').toLowerCase();const credIni=parseFloat(e.creditoIniziale)||0;const valRic=parseFloat(e.valoreRicarica)||0;const prezzoSel=parseFloat(e.prezzoSelezione)||0;const selezioni=parseInt(e.selezioni)||0;let tipoDisplay='',bgColor='rgba(59,130,246,0.2)',borderColor='#3b82f6',creditoRimanente=0;const isManuale=tipoOrig.includes('manuale')&&!tipoOrig.includes('sherlock');if(tipoOrig.includes('ricarica')){tipoDisplay=isManuale?'📊 Ricarica Key/Card Manuale':'📊 Ricarica Key/Card Web';bgColor='rgba(34,197,94,0.2)';borderColor='#22c55e';creditoRimanente=credIni+valRic;return `<div class="ordine-item evento-ricarica" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">${tipoDisplay}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap"><div><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span style="margin-left:8px">💰 €${valRic}</span><span style="margin-left:8px">🔑 ${e.keycard||'-'}</span></div><div style="color:#22c55e;font-weight:bold">Credito €${creditoRimanente}</div></div></div>`;}else if(tipoOrig.includes('scarico')){tipoDisplay=isManuale?'📊 Scarico Key/Card Manuale':'📊 Scarico Key/Card Web';bgColor='rgba(239,68,68,0.2)';borderColor='#ef4444';creditoRimanente=0;return `<div class="ordine-item evento-scarico" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">${tipoDisplay}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap"><div><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span style="margin-left:8px">🔑 ${e.keycard||'-'}</span></div><div style="color:#ef4444;font-weight:bold">Credito €${creditoRimanente}</div></div></div>`;}else if(tipoOrig.includes('vendita')){const isLavatrice=(selezioni===1||selezioni===3);const isAsciugatrice=(selezioni===2||selezioni===4);let iconDevice='📊';if(isLavatrice){tipoDisplay=`🧺 Utilizzo Lavatrice N: ${selezioni}`;iconDevice='🧺';}else if(isAsciugatrice){tipoDisplay=`🌀 Utilizzo Asciugatrice N: ${selezioni}`;iconDevice='🌀';}else{tipoDisplay='📊 Utilizzo Device';iconDevice='📊';}bgColor='rgba(168,85,247,0.2)';borderColor='#a855f7';creditoRimanente=credIni-prezzoSel;return `<div class="ordine-item evento-vendita" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">${tipoDisplay}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap"><div><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span style="margin-left:8px">💵 €${prezzoSel}</span><span style="margin-left:8px">🔑 ${e.keycard||'-'}</span></div><div style="color:#a855f7;font-weight:bold">Credito €${creditoRimanente}</div></div></div>`;}else{return `<div class="ordine-item evento-altro" style="background:${bgColor};border-left-color:${borderColor}"><div class="ordine-head"><span class="ordine-id">📊 ${e.evento||''}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info"><span>💳 <b style="font-size:1.3em">${e.cliente||'-'}</b></span><span>🔑 ${e.keycard||'-'}</span><span>📍 ${e.sede||e.device||'-'}</span></div></div>`;}}).join('');if(eventiHasMore){html+=`<div id="loadMoreTrigger" style="text-align:center;padding:20px;color:#94a3b8"><span class="loading-spinner">⏳</span> Scorri per caricare altri...</div>`;}cont.innerHTML=html;return;}if(filter==='registro'){let list=[...registro].filter(matchSearch);list=list.filter(o=>{const st=(o.stato||o.statoFinale||'').toLowerCase();return searchFiltersRegistro.includes(st);});if(searchText&&!searchAllTime){list=list.filter(o=>{const d=parseDataOrdine(o);return d&&(now-d)<giorni30;});}const totale=list.length;registroHasMore=registroLoaded<totale;list=list.slice(0,registroLoaded);if(!list.length){cont.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>'+(searchText?'Nessun risultato'+(searchAllTime?'':' (ultimi 30gg)'):'Nessun ordine nel registro')+'</p></div>';return;}let html=list.map(o=>{const st=(o.stato||o.statoFinale||'').toLowerCase();const displayId=parseInt(String(o.id).replace(/\D/g,''))||o.id;return `<div class="ordine-item ${st}" onclick='showDettaglio(${JSON.stringify(o)})'><div class="ordine-head"><span class="ordine-id">#${displayId}</span><span class="ordine-stato stato-${st}">${o.stato||o.statoFinale||''}</span></div><div class="ordine-info"><span style="font-size:1.3em;font-weight:bold;color:#fff">💳 ${o.cliente}</span><span>💰 €${o.importo}</span><span>📅 ${formatData(o.dataChiusura)||''} ${o.oraChiusura||''}</span><span>✍️ ${o.creatoDa||'-'}</span></div></div>`;}).join('');if(registroHasMore){html+=`<div id="loadMoreTrigger" style="text-align:center;padding:20px;color:#94a3b8"><span class="loading-spinner">⏳</span> Scorri per caricare altri...</div>`;}cont.innerHTML=html;return;}const h48=48*60*60*1000;let list=[];if(filter==='all'){const registroRecente=registro.filter(o=>{const d=parseDataOrdine(o);return d&&(now-d)<h48;}).map(o=>({...o,_fromRegistro:true}));list=[...ordini,...registroRecente].filter(matchSearch);}else if(filter==='pending'){list=[...ordini].filter(matchSearch).filter(o=>['PENDING','IN_PROGRESS','CHECK'].includes(o.stato||'PENDING'));}else{list=[...ordini].filter(matchSearch);}list.sort((a,b)=>{if(a.localOnly&&!b.localOnly)return -1;if(!a.localOnly&&b.localOnly)return 1;const dA=parseDataOrdine(a)||new Date(0);const dB=parseDataOrdine(b)||new Date(0);return dB-dA;});if(!list.length){cont.innerHTML='<div class="empty-state"><div class="empty-icon">📂</div><p>'+(searchText?'Nessun risultato':'Nessun ordine')+'</p></div>';return;}cont.innerHTML=list.map(o=>{const st=(o.stato||o.statoFinale||'PENDING').toLowerCase();const displayId=o.localOnly?'...':parseInt(String(o.id).replace(/\D/g,''))||o.id;const cd=getCountdown(o);const showCd=(st==='pending'||st==='in_progress'||st==='check');const cdHtml=showCd&&cd?`<span>⏱️ <span class="countdown-timer" data-id="${o.id||o.localId}" style="color:${cd.expired?'#ef4444':'#fbbf24'}">${cd.text}</span></span>`:'';const dataDisplay=o._fromRegistro?`📅 ${formatData(o.dataChiusura)||''} ${o.oraChiusura||''}`:`🕐 ${o.oraCreazione||''}`;return `<div class="ordine-item ${st} ${o.localOnly?'local-only':''}" onclick='showDettaglio(${JSON.stringify(o)})'><div class="ordine-head"><span class="ordine-id">#${displayId}</span><span class="ordine-stato stato-${st}">${o.stato||o.statoFinale||'PENDING'}</span></div><div class="ordine-info"><span style="font-size:1.3em;font-weight:bold;color:#fff">💳 ${o.cliente}</span><span>💰 €${o.importo}</span><span>${dataDisplay}</span><span>✍️ ${o.creatoDa||'-'}</span>${cdHtml}</div></div>`;}).join('');}
+// ==================== VISTA CARD ====================
+// Parsing data evento (formato sherlock italiano: "22 apr 2026 14:23:11") o ISO.
+function _parseDataEventoCard(e){
+  const mesiIt={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};
+  const d=e.dataOra||e.registratoIl||'';
+  if(!d)return null;
+  if(d.includes('T')){const t=new Date(d);return isNaN(t.getTime())?null:t;}
+  const m=d.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s+(\d{1,2}):(\d{2}):?(\d{2})?/i);
+  if(m){const giorno=parseInt(m[1]),mese=mesiIt[m[2].toLowerCase()],anno=parseInt(m[3]);
+    if(mese!==undefined)return new Date(anno,mese,giorno,parseInt(m[4])||0,parseInt(m[5])||0,parseInt(m[6])||0);
+  }
+  return null;
+}
+// Calcola credito residuo, ultima ricarica e media utilizzi per una card.
+// Ritorna oggetto: { creditoResiduo, ultimaRicarica, mediaTot, media3Mesi, eventiOrdinati }
+function calcolaStatsCard(numeroCard){
+  const num=String(numeroCard);
+  const eventiCard=eventi.filter(e=>String(e.cliente)===num)
+    .map(e=>({...e,_dt:_parseDataEventoCard(e)}))
+    .filter(e=>e._dt)
+    .sort((a,b)=>b._dt-a._dt);
+  let creditoResiduo=null;
+  if(eventiCard.length){
+    const ultimo=eventiCard[0];
+    const tipo=(ultimo.evento||'').toLowerCase();
+    const credIni=parseFloat(ultimo.creditoIniziale)||0;
+    const valRic=parseFloat(ultimo.valoreRicarica)||0;
+    const prezzoSel=parseFloat(ultimo.prezzoSelezione)||0;
+    if(tipo.includes('ricarica'))creditoResiduo=credIni+valRic;
+    else if(tipo.includes('scarico'))creditoResiduo=0;
+    else if(tipo.includes('vendita'))creditoResiduo=credIni-prezzoSel;
+    else creditoResiduo=credIni;
+  }
+  const ricariche=eventiCard.filter(e=>(e.evento||'').toLowerCase().includes('ricarica'));
+  const ultimaRicarica=ricariche[0]||null;
+  const utilizzi=eventiCard.filter(e=>(e.evento||'').toLowerCase().includes('vendita'));
+  const oggi=new Date();
+  const giorno=24*60*60*1000;
+  const inizioUlt30=new Date(oggi.getTime()-30*giorno);
+  const inizioPrec30=new Date(oggi.getTime()-60*giorno);
+  const utilizziUlt30=utilizzi.filter(u=>u._dt>=inizioUlt30).length;
+  const utilizziPrec30=utilizzi.filter(u=>u._dt>=inizioPrec30&&u._dt<inizioUlt30).length;
+  return {creditoResiduo,ultimaRicarica,utilizziUlt30,utilizziPrec30,eventiOrdinati:eventiCard};
+}
+// Costruisce l'elenco delle card:
+//   - sequenza numerica 1..70 sempre presente (anche card senza eventi)
+//   - card con numero > 70: incluse solo se hanno avuto almeno un evento
+//     (ricarica/utilizzo) DOPO il timestamp di attivazione della feature,
+//     salvato in localStorage al primo run. Una volta apparse, restano memorizzate
+//     anche se il loro evento e' vecchio.
+//   - eventuali card alfanumeriche (codici non interi) appese in fondo
+const CARD_MAX_FISSO=70;
+function elencoNumeriCard(){
+  const result=[];
+  for(let i=1;i<=CARD_MAX_FISSO;i++)result.push(String(i));
+  // Timestamp di attivazione della feature (primo run = adesso)
+  const KFA='kc_card_feature_at';
+  let activatedAt;
+  const rawAt=localStorage.getItem(KFA);
+  if(rawAt){activatedAt=new Date(parseInt(rawAt));}
+  else{activatedAt=new Date();try{localStorage.setItem(KFA,String(activatedAt.getTime()));}catch(e){}}
+  // Card extra (>70) gia' viste in precedenti sessioni
+  const KCE='kc_card_extra';
+  let extra=[];
+  try{const r=localStorage.getItem(KCE);if(r)extra=JSON.parse(r)||[];}catch(e){extra=[];}
+  // Scansiona gli eventi: aggiungi numero >70 se evento >= activatedAt
+  let changed=false;
+  eventi.forEach(e=>{
+    if(!e||e.cliente==null||e.cliente==='')return;
+    const x=parseInt(e.cliente);
+    if(isNaN(x)||x<=CARD_MAX_FISSO)return;
+    const dt=_parseDataEventoCard(e);
+    if(!dt||dt<activatedAt)return;
+    const s=String(x);
+    if(!extra.includes(s)){extra.push(s);changed=true;}
+  });
+  if(changed){
+    try{localStorage.setItem(KCE,JSON.stringify(extra));}catch(e){}
+  }
+  extra.sort((a,b)=>parseInt(a)-parseInt(b));
+  result.push(...extra);
+  // Card alfanumeriche in coda
+  const alfaSet=new Set();
+  clienti.forEach(c=>{if(c&&c.numero!=null&&c.numero!==''&&isNaN(parseInt(c.numero)))alfaSet.add(String(c.numero));});
+  eventi.forEach(e=>{if(e&&e.cliente!=null&&e.cliente!==''&&isNaN(parseInt(e.cliente)))alfaSet.add(String(e.cliente));});
+  const alfa=Array.from(alfaSet).sort((a,b)=>String(a).localeCompare(String(b)));
+  result.push(...alfa);
+  return result;
+}
+// Tempo trascorso in italiano: "oggi" / "ieri" / "5 giorni fa" / "1 mese e 5 giorni fa" / "2 anni e 3 mesi fa"
+function tempoDa(d){
+  if(!d||isNaN(d.getTime()))return '';
+  const oggi=new Date();
+  const ms=oggi-d;
+  if(ms<0)return '';
+  const giorni=Math.floor(ms/(1000*60*60*24));
+  if(giorni===0)return 'oggi';
+  if(giorni===1)return 'ieri';
+  if(giorni<30)return `${giorni} giorni fa`;
+  // Calcolo mesi e giorni rispettando i mesi reali del calendario
+  let anni=oggi.getFullYear()-d.getFullYear();
+  let mesi=oggi.getMonth()-d.getMonth();
+  let gg=oggi.getDate()-d.getDate();
+  if(gg<0){
+    mesi-=1;
+    const meseScorso=new Date(oggi.getFullYear(),oggi.getMonth(),0).getDate();
+    gg+=meseScorso;
+  }
+  if(mesi<0){anni-=1;mesi+=12;}
+  if(anni>=1){
+    if(mesi===0)return anni===1?'1 anno fa':`${anni} anni fa`;
+    const aLbl=anni===1?'1 anno':`${anni} anni`;
+    const mLbl=mesi===1?'1 mese':`${mesi} mesi`;
+    return `${aLbl} e ${mLbl} fa`;
+  }
+  if(mesi===0)return `${gg} giorni fa`;
+  const mLbl=mesi===1?'1 mese':`${mesi} mesi`;
+  if(gg===0)return `${mLbl} fa`;
+  const gLbl=gg===1?'1 giorno':`${gg} giorni`;
+  return `${mLbl} e ${gLbl} fa`;
+}
+function renderListaCard(){
+  const cont=document.getElementById('ordiniList');
+  const numeri=elencoNumeriCard();
+  if(!numeri.length){
+    cont.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><p>Nessuna card</p></div>';
+    return;
+  }
+  const html=numeri.map(num=>{
+    const cli=clienti.find(c=>String(c.numero)===String(num));
+    const stats=calcolaStatsCard(num);
+    // Keycard: prima da /clienti/, in fallback dall'ultimo evento conosciuto
+    let keycard=cli?(cli.keycard||''):'';
+    if(!keycard&&stats.eventiOrdinati.length){
+      const ev=stats.eventiOrdinati.find(e=>e.keycard);
+      if(ev)keycard=ev.keycard;
+    }
+    const credStr=(stats.creditoResiduo==null)?'<span style="color:#94a3b8">n/d</span>':`€${stats.creditoResiduo.toFixed(2)}`;
+    const credColor=(stats.creditoResiduo==null)?'#94a3b8':(stats.creditoResiduo>0?'#22c55e':'#ef4444');
+    let dataLine='<span style="color:#94a3b8">📅 mai ricaricata</span>';
+    if(stats.ultimaRicarica){
+      const dt=stats.ultimaRicarica._dt;
+      const fa=tempoDa(dt);
+      const data=stats.ultimaRicarica.dataOra||'';
+      dataLine=`<span style="color:#94a3b8">📅 <b style="color:#cbd5e1">${fa}</b> &middot; ${data}</span>`;
+    }
+    return `<div class="ordine-item" style="background:rgba(59,130,246,0.12);border-left-color:#3b82f6;cursor:pointer" onclick="showCardDetail('${String(num).replace(/'/g,"\\'")}')"><div class="ordine-head"><span class="ordine-id">💳 <b style="font-size:1.3em;color:#fff">${num}</b></span><span style="color:${credColor};font-weight:bold">${credStr}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>🔑 ${keycard||'<span style=\"color:#94a3b8\">-</span>'}</span>${dataLine}</div></div>`;
+  }).join('');
+  cont.innerHTML=html;
+}
+function showCardDetail(num){
+  const cli=clienti.find(c=>String(c.numero)===String(num));
+  const stats=calcolaStatsCard(num);
+  // Keycard: prima da /clienti/, in fallback dall'ultimo evento conosciuto
+  let keycard=cli?(cli.keycard||''):'';
+  if(!keycard&&stats.eventiOrdinati.length){
+    const ev=stats.eventiOrdinati.find(e=>e.keycard);
+    if(ev)keycard=ev.keycard;
+  }
+  if(!keycard)keycard='-';
+  const credStr=(stats.creditoResiduo==null)?'n/d':`€${stats.creditoResiduo.toFixed(2)}`;
+  const credColor=(stats.creditoResiduo==null)?'#94a3b8':(stats.creditoResiduo>0?'#22c55e':'#ef4444');
+  const ultRic=stats.ultimaRicarica?(stats.ultimaRicarica.dataOra||'-'):'mai';
+  document.getElementById('cardDetailTitle').textContent=`Card ${num}`;
+  let info=`<div class="modal-row"><span class="modal-label">Codice keycard:</span><span class="modal-value">${keycard}</span></div>`
+    +`<div class="modal-row"><span class="modal-label">Credito residuo:</span><span class="modal-value" style="color:${credColor};font-weight:bold">${credStr}</span></div>`
+    +`<div class="modal-row"><span class="modal-label">Ultima ricarica:</span><span class="modal-value">${ultRic}</span></div>`
+    +`<div class="modal-row"><span class="modal-label">Utilizzi ultimi 30 giorni:</span><span class="modal-value">${stats.utilizziUlt30}</span></div>`
+    +`<div class="modal-row"><span class="modal-label">Utilizzi penultimi 30 giorni:</span><span class="modal-value">${stats.utilizziPrec30}</span></div>`;
+  let eventiHtml='';
+  if(!stats.eventiOrdinati.length){
+    eventiHtml='<div class="empty-state" style="padding:18px"><p>Nessun evento</p></div>';
+  }else{
+    eventiHtml=stats.eventiOrdinati.map(e=>{
+      const tipo=(e.evento||'').toLowerCase();
+      const credIni=parseFloat(e.creditoIniziale)||0;
+      const valRic=parseFloat(e.valoreRicarica)||0;
+      const prezzoSel=parseFloat(e.prezzoSelezione)||0;
+      const selezioni=parseInt(e.selezioni)||0;
+      const isManuale=tipo.includes('manuale')&&!tipo.includes('sherlock');
+      let label='',bg='rgba(59,130,246,0.18)',border='#3b82f6',colorCred='#94a3b8',credLine='';
+      if(tipo.includes('ricarica')){
+        label=isManuale?'📊 Ricarica Manuale':'📊 Ricarica Web';
+        bg='rgba(34,197,94,0.18)';border='#22c55e';colorCred='#22c55e';
+        credLine=`<span>💰 €${valRic}</span><span style="color:${colorCred};font-weight:bold">Credito €${(credIni+valRic).toFixed(2)}</span>`;
+      }else if(tipo.includes('scarico')){
+        label=isManuale?'📊 Scarico Manuale':'📊 Scarico Web';
+        bg='rgba(239,68,68,0.18)';border='#ef4444';colorCred='#ef4444';
+        credLine=`<span style="color:${colorCred};font-weight:bold">Credito €0</span>`;
+      }else if(tipo.includes('vendita')){
+        const isLav=(selezioni===1||selezioni===3);
+        const isAsc=(selezioni===2||selezioni===4);
+        label=isLav?`🧺 Lavatrice N:${selezioni}`:(isAsc?`🌀 Asciugatrice N:${selezioni}`:'📊 Utilizzo');
+        bg='rgba(168,85,247,0.18)';border='#a855f7';colorCred='#a855f7';
+        credLine=`<span>💵 €${prezzoSel}</span><span style="color:${colorCred};font-weight:bold">Credito €${(credIni-prezzoSel).toFixed(2)}</span>`;
+      }else{
+        label='📊 '+(e.evento||'');
+        credLine='';
+      }
+      return `<div class="ordine-item" style="background:${bg};border-left-color:${border};margin-bottom:6px"><div class="ordine-head"><span class="ordine-id">${label}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">${credLine}</div></div>`;
+    }).join('');
+  }
+  document.getElementById('cardDetailContent').innerHTML=
+    `<div style="flex-shrink:0">${info}</div>`
+    +`<div style="margin-top:14px;font-weight:bold;color:#94a3b8;flex-shrink:0">📜 Cronologia eventi (${stats.eventiOrdinati.length})</div>`
+    +`<div style="flex:1;min-height:0;overflow-y:auto;margin-top:8px">${eventiHtml}</div>`;
+  openModal('modalCard');
+}
+
 function setupInfiniteScroll(){const cont=document.getElementById('ordiniList');cont.addEventListener('scroll',()=>{if(loadingMore)return;const{scrollTop,scrollHeight,clientHeight}=cont;if(scrollTop+clientHeight>=scrollHeight-100){loadMore();}});}
 function loadMore(){if(loadingMore)return;if(filter==='eventi'&&eventiHasMore){loadingMore=true;eventiLoaded+=20;render();loadingMore=false;}else if(filter==='registro'&&registroHasMore){loadingMore=true;registroLoaded+=20;render();loadingMore=false;}}
 function setFilter(f){filter=f;eventiLoaded=20;registroLoaded=20;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.f===f));updateSearchFiltersVisibility();render();}

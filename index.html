@@ -2661,17 +2661,21 @@ function elencoNumeriCard(){
 // Tempo trascorso in italiano: "oggi" / "ieri" / "5 giorni fa" / "1 mese e 5 giorni fa" / "2 anni e 3 mesi fa"
 function tempoDa(d){
   if(!d||isNaN(d.getTime()))return '';
-  const oggi=new Date();
-  const ms=oggi-d;
+  const now=new Date();
+  // Confronto SOLO date (senza ora): altrimenti un evento di ieri mattina
+  // confrontato con stamattina presto darebbe ~22h -> floor(22/24)=0 -> "oggi" sbagliato.
+  const oggi=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const dPura=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const ms=oggi-dPura;
   if(ms<0)return '';
-  const giorni=Math.floor(ms/(1000*60*60*24));
+  const giorni=Math.round(ms/(1000*60*60*24));
   if(giorni===0)return 'oggi';
   if(giorni===1)return 'ieri';
   if(giorni<30)return `${giorni} giorni fa`;
-  // Calcolo mesi e giorni rispettando i mesi reali del calendario
-  let anni=oggi.getFullYear()-d.getFullYear();
-  let mesi=oggi.getMonth()-d.getMonth();
-  let gg=oggi.getDate()-d.getDate();
+  // Calcolo mesi e giorni rispettando i mesi reali del calendario (usando date pure)
+  let anni=oggi.getFullYear()-dPura.getFullYear();
+  let mesi=oggi.getMonth()-dPura.getMonth();
+  let gg=oggi.getDate()-dPura.getDate();
   if(gg<0){
     mesi-=1;
     const meseScorso=new Date(oggi.getFullYear(),oggi.getMonth(),0).getDate();

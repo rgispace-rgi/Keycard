@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v114</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v115</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2256,6 +2256,18 @@ function setupFirebaseListeners() {
         updateCentralinoBadge(snapshot.val());
     });
     unsubscribers.push(() => centralinoRef.off('value'));
+
+    // Listener cardExtra: lista card > 70 da mostrare a tutti i client.
+    // Sostituisce il vecchio localStorage (specifico al device) con una sorgente
+    // condivisa su Firebase: tutti vedono le stesse card.
+    const cardExtraRef = db.ref('sistema/cardExtra');
+    cardExtraRef.on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        cardExtraActivation = data.lastActivation ? new Date(parseInt(data.lastActivation)) : null;
+        cardExtraGlobale = Object.keys(data.numeri || {}).filter(k => data.numeri[k]);
+        if (typeof filter !== 'undefined' && filter === 'card') render();
+    });
+    unsubscribers.push(() => cardExtraRef.off('value'));
 }
 
 // Aggiorna il badge "Lavanderia Online/Offline" in base al nodo Firebase /sistema/centralino
@@ -2455,6 +2467,8 @@ async function processQueue(){
 const DEFAULT_USERS=[{username:'admin',password:'admin123',role:'admin'},{username:'Alberto',password:'alberto1',role:'operatore'},{username:'Cristina',password:'cristina1',role:'operatore'}];
 let API_URL='https://script.google.com/macros/s/AKfycbzTNiwBWX2G5uR2oIz_tLJBLF1x2QzUJkbT1eGntTuPmlbRC3jCVEiKiCZ1vLYCBVhB/exec',currentUser=null,clienti=[],ordini=[],registro=[],eventi=[],importo=20,scadenza=48,filter='all',searchText='',selOrdine=null,editIdx=null,syncing=false,localId=1000;
 let eventiLoaded=20,registroLoaded=20,eventiHasMore=true,registroHasMore=true,loadingMore=false,searchAllTime=false;
+// Card extra (>70) condivise tra tutti i client via Firebase /sistema/cardExtra
+let cardExtraGlobale=[],cardExtraActivation=null;
 let searchFiltersRegistro=['done','canceled','failed','expired'];
 let searchFiltersEventi=['ricarica','scarico','vendita','altro'];
 // Warning modal mode control
@@ -2615,40 +2629,18 @@ function calcolaStatsCard(numeroCard){
 }
 // Costruisce l'elenco delle card:
 //   - sequenza numerica 1..70 sempre presente (anche card senza eventi)
-//   - card con numero > 70: incluse solo se hanno avuto almeno un evento
-//     (ricarica/utilizzo) DOPO il timestamp di attivazione della feature,
-//     salvato in localStorage al primo run. Una volta apparse, restano memorizzate
-//     anche se il loro evento e' vecchio.
+//   - card con numero > 70: lette dalla lista globale Firebase /sistema/cardExtra
+//     (popolata dai client quando vedono un evento di card >70 con data
+//     successiva al timestamp di "feature activation"). Sorgente condivisa
+//     tra tutti i client: tutti vedono le stesse card.
 //   - eventuali card alfanumeriche (codici non interi) appese in fondo
 const CARD_MAX_FISSO=70;
 function elencoNumeriCard(){
   const result=[];
   for(let i=1;i<=CARD_MAX_FISSO;i++)result.push(String(i));
-  // Timestamp di attivazione della feature (primo run = adesso)
-  const KFA='kc_card_feature_at';
-  let activatedAt;
-  const rawAt=localStorage.getItem(KFA);
-  if(rawAt){activatedAt=new Date(parseInt(rawAt));}
-  else{activatedAt=new Date();try{localStorage.setItem(KFA,String(activatedAt.getTime()));}catch(e){}}
-  // Card extra (>70) gia' viste in precedenti sessioni
-  const KCE='kc_card_extra';
-  let extra=[];
-  try{const r=localStorage.getItem(KCE);if(r)extra=JSON.parse(r)||[];}catch(e){extra=[];}
-  // Scansiona gli eventi: aggiungi numero >70 se evento >= activatedAt
-  let changed=false;
-  eventi.forEach(e=>{
-    if(!e||e.cliente==null||e.cliente==='')return;
-    const x=parseInt(e.cliente);
-    if(isNaN(x)||x<=CARD_MAX_FISSO)return;
-    const dt=_parseDataEventoCard(e);
-    if(!dt||dt<activatedAt)return;
-    const s=String(x);
-    if(!extra.includes(s)){extra.push(s);changed=true;}
-  });
-  if(changed){
-    try{localStorage.setItem(KCE,JSON.stringify(extra));}catch(e){}
-  }
-  extra.sort((a,b)=>parseInt(a)-parseInt(b));
+  // Card extra (>70) dalla lista globale Firebase
+  const extra=(cardExtraGlobale||[]).filter(n=>{const x=parseInt(n);return !isNaN(x)&&x>CARD_MAX_FISSO;})
+    .sort((a,b)=>parseInt(a)-parseInt(b));
   result.push(...extra);
   // Card alfanumeriche in coda
   const alfaSet=new Set();
@@ -2657,6 +2649,44 @@ function elencoNumeriCard(){
   const alfa=Array.from(alfaSet).sort((a,b)=>String(a).localeCompare(String(b)));
   result.push(...alfa);
   return result;
+}
+// Propaga su Firebase l'attivazione e le card >70 viste localmente.
+// Esegue anche la migration una-tantum del vecchio localStorage (kc_card_feature_at, kc_card_extra)
+// dei client che avevano gia' la v114: il primo che apre la v115 popola la lista globale.
+function syncCardExtraToFirebase(){
+  if(!firebaseConnected||!db)return;
+  // Determina/setta lastActivation. Se Firebase non l'ha, prova prima la
+  // migration dal localStorage del client, altrimenti usa "adesso".
+  let activation=cardExtraActivation;
+  if(!activation){
+    const rawAt=localStorage.getItem('kc_card_feature_at');
+    activation=rawAt?new Date(parseInt(rawAt)):new Date();
+    cardExtraActivation=activation;
+    db.ref('sistema/cardExtra/lastActivation').set(activation.getTime()).catch(e=>console.warn('cardExtra activation:',e));
+  }
+  const known=new Set((cardExtraGlobale||[]).map(String));
+  const daScrivere=new Set();
+  // Migration una-tantum: numeri presenti nel vecchio kc_card_extra di questo browser
+  try{
+    const rawExtra=localStorage.getItem('kc_card_extra');
+    if(rawExtra){
+      const arr=JSON.parse(rawExtra)||[];
+      arr.forEach(n=>{const s=String(n);if(!known.has(s))daScrivere.add(s);});
+    }
+  }catch(e){}
+  // Scansione eventi: card >70 con data >= activation
+  eventi.forEach(e=>{
+    if(!e||e.cliente==null||e.cliente==='')return;
+    const x=parseInt(e.cliente);
+    if(isNaN(x)||x<=CARD_MAX_FISSO)return;
+    const dt=_parseDataEventoCard(e);
+    if(!dt||dt<activation)return;
+    const s=String(x);
+    if(!known.has(s))daScrivere.add(s);
+  });
+  daScrivere.forEach(s=>{
+    db.ref('sistema/cardExtra/numeri/'+s).set(true).catch(e=>console.warn('cardExtra numero',s,e));
+  });
 }
 // Tempo trascorso in italiano: "oggi" / "ieri" / "5 giorni fa" / "1 mese e 5 giorni fa" / "2 anni e 3 mesi fa"
 function tempoDa(d){
@@ -2695,6 +2725,7 @@ function tempoDa(d){
   return `${mLbl} e ${gLbl} fa`;
 }
 function renderListaCard(){
+  syncCardExtraToFirebase();
   const cont=document.getElementById('ordiniList');
   const numeri=elencoNumeriCard();
   if(!numeri.length){

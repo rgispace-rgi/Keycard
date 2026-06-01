@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v117</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v118</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -43,6 +43,11 @@
             transition: none !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
+        }
+        /* Eccezione: il pulse rosso dei badge "offline" (Lavanderia / Bot Fermo)
+           resta attivo anche in Lite mode perche' e' un'indicazione critica. */
+        html.lite-mode .centralino-badge.offline {
+            animation: centralino-pulse 1.4s ease-in-out infinite !important;
         }
         html.lite-mode body::before,
         html.lite-mode body::after,

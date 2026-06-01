@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v116</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v117</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2282,7 +2282,7 @@ function setupFirebaseListeners() {
 // viene richiamata anche da un timer (ogni 30s) per ricalcolare il "stale" senza dover
 // aspettare un nuovo snapshot Firebase.
 let botBadgeData = null;
-const BOT_STALE_MS = 3 * 60 * 1000; // 3 minuti
+const BOT_STALE_MS = 90 * 1000; // 90s = 3 heartbeat (bot scrive ogni 30s), tollera 2 hiccup di rete
 
 function updateBotBadge() {
     const el = document.getElementById('botBadge');
@@ -2313,8 +2313,8 @@ function updateBotBadge() {
         el.title = ts ? `Fermato: ${ts}` : 'Fermo';
     }
 }
-// Ricalcolo "stale" ogni 30s anche senza snapshot nuovo da Firebase
-setInterval(updateBotBadge, 30000);
+// Ricalcolo "stale" ogni 15s anche senza snapshot nuovo da Firebase
+setInterval(updateBotBadge, 15000);
 
 // Aggiorna il badge "Lavanderia Online/Offline" in base al nodo Firebase /sistema/centralino
 function updateCentralinoBadge(data) {

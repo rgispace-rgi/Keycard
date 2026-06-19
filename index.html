@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v121</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v123</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2520,6 +2520,8 @@ let API_URL='https://script.google.com/macros/s/AKfycbzTNiwBWX2G5uR2oIz_tLJBLF1x
 let eventiLoaded=20,registroLoaded=20,eventiHasMore=true,registroHasMore=true,loadingMore=false,searchAllTime=false;
 // Paginazione eventi: eventiLive = ultimi 1000 in tempo reale; eventiOlder = pacchetti più vecchi caricati a scroll
 let eventiLive=[],eventiOlder=[],eventiCanLoadOlder=true,eventiFilteredTotal=0;
+// Cache dello storico COMPLETO eventi, usata dalla lista Card (credito/ultima ricarica corretti anche oltre i 1000)
+let eventiFull=null,eventiFullLoading=false;
 // Card extra (>70) condivise tra tutti i client via Firebase /sistema/cardExtra
 let cardExtraGlobale=[],cardExtraActivation=null;
 let searchFiltersRegistro=['done','canceled','failed','expired'];
@@ -2780,6 +2782,21 @@ function tempoDa(d){
 function renderListaCard(){
   syncCardExtraToFirebase();
   const cont=document.getElementById('ordiniList');
+  // Credito e "ultima ricarica" della lista richiedono lo storico COMPLETO, non solo i 1000 live:
+  // scarico tutti gli eventi una volta (cache eventiFull) e calcolo le stats da lì.
+  if(!eventiFull){
+    if(!eventiFullLoading&&db){
+      eventiFullLoading=true;
+      db.ref('eventi').once('value').then(snap=>{
+        const d=snap.val()||{};
+        eventiFull=Object.keys(d).map(id=>({...d[id],id}));
+        eventiFullLoading=false;
+        if(filter==='card')renderListaCard();
+      }).catch(err=>{console.warn('eventiFull non caricato, uso i 1000 live:',err);eventiFull=eventi;eventiFullLoading=false;if(filter==='card')renderListaCard();});
+    }
+    cont.innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div><p>Carico storico card…</p></div>';
+    return;
+  }
   const numeri=elencoNumeriCard();
   if(!numeri.length){
     cont.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><p>Nessuna card</p></div>';
@@ -2787,7 +2804,7 @@ function renderListaCard(){
   }
   const html=numeri.map(num=>{
     const cli=clienti.find(c=>String(c.numero)===String(num));
-    const stats=calcolaStatsCard(num);
+    const stats=calcolaStatsCard(num, eventiFull);
     // Keycard: prima da /clienti/, in fallback dall'ultimo evento conosciuto
     let keycard=cli?(cli.keycard||''):'';
     if(!keycard&&stats.eventiOrdinati.length){
@@ -2906,7 +2923,7 @@ function filtraCronologiaCard(tipo){
 // Ridisegna la lista cronologia in base al filtro corrente + aggiorna stile pulsanti.
 function renderCronologiaCard(){
   let lista=_cardEventiCorrenti;
-  if(_cardFiltroCron==='ricariche')lista=lista.filter(e=>(e.evento||'').toLowerCase().includes('ricarica'));
+  if(_cardFiltroCron==='ricariche')lista=lista.filter(e=>{const t=(e.evento||'').toLowerCase();return t.includes('ricarica')||t.includes('scarico');});
   else if(_cardFiltroCron==='utilizzi')lista=lista.filter(e=>(e.evento||'').toLowerCase().includes('vendita'));
   const btnRic=document.getElementById('btnCronRicariche');
   const btnUti=document.getElementById('btnCronUtilizzi');
@@ -2949,7 +2966,7 @@ function loadMore(){
   }
   if(filter==='registro'&&registroHasMore){loadingMore=true;registroLoaded+=20;render();loadingMore=false;}
 }
-function setFilter(f){filter=f;eventiLoaded=20;registroLoaded=20;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.f===f));updateSearchFiltersVisibility();render();}
+function setFilter(f){filter=f;eventiLoaded=20;registroLoaded=20;if(f==='card')eventiFull=null;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.f===f));updateSearchFiltersVisibility();render();}
 function updateSearchFiltersVisibility(){const boxR=document.getElementById('searchFiltersRegistro');const boxE=document.getElementById('searchFiltersEventi');if(boxR)boxR.style.display=filter==='registro'?'block':'none';if(boxE)boxE.style.display=filter==='eventi'?'block':'none';}
 function updateSearchFilters(){if(filter==='registro'){searchFiltersRegistro=[];document.querySelectorAll('#searchFiltersRegistro input:checked').forEach(cb=>searchFiltersRegistro.push(cb.value));}else if(filter==='eventi'){searchFiltersEventi=[];document.querySelectorAll('#searchFiltersEventi input:checked').forEach(cb=>searchFiltersEventi.push(cb.value));}eventiLoaded=20;registroLoaded=20;render();}
 function toggleSearch(){const box=document.getElementById('searchBox');const visible=box.style.display==='none';box.style.display=visible?'block':'none';document.getElementById('btnSearch').classList.toggle('active',visible);if(visible){document.getElementById('searchInput').focus();updateSearchFiltersVisibility();}else{document.getElementById('searchInput').value='';searchText='';searchAllTime=false;document.getElementById('searchAllTimeCheck').checked=false;render();}}

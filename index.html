@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v119</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v120</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2831,44 +2831,66 @@ function showCardDetail(num){
     +`<div class="modal-row"><span class="modal-label">Ultima ricarica:</span><span class="modal-value">${ultRic}</span></div>`
     +`<div class="modal-row"><span class="modal-label">Utilizzi ultimi 30 giorni:</span><span class="modal-value">${stats.utilizziUlt30}</span></div>`
     +`<div class="modal-row"><span class="modal-label">Utilizzi penultimi 30 giorni:</span><span class="modal-value">${stats.utilizziPrec30}</span></div>`;
-  let eventiHtml='';
-  if(!stats.eventiOrdinati.length){
-    eventiHtml='<div class="empty-state" style="padding:18px"><p>Nessun evento</p></div>';
-  }else{
-    eventiHtml=stats.eventiOrdinati.map(e=>{
-      const tipo=(e.evento||'').toLowerCase();
-      const credIni=parseFloat(e.creditoIniziale)||0;
-      const valRic=parseFloat(e.valoreRicarica)||0;
-      const prezzoSel=parseFloat(e.prezzoSelezione)||0;
-      const selezioni=parseInt(e.selezioni)||0;
-      const isManuale=tipo.includes('manuale')&&!tipo.includes('sherlock');
-      let label='',bg='rgba(59,130,246,0.18)',border='#3b82f6',colorCred='#94a3b8',credLine='';
-      if(tipo.includes('ricarica')){
-        label=isManuale?'📊 Ricarica Manuale':'📊 Ricarica Web';
-        bg='rgba(34,197,94,0.18)';border='#22c55e';colorCred='#22c55e';
-        credLine=`<span>💰 €${valRic}</span><span style="color:${colorCred};font-weight:bold">Credito €${(credIni+valRic).toFixed(2)}</span>`;
-      }else if(tipo.includes('scarico')){
-        label=isManuale?'📊 Scarico Manuale':'📊 Scarico Web';
-        bg='rgba(239,68,68,0.18)';border='#ef4444';colorCred='#ef4444';
-        credLine=`<span style="color:${colorCred};font-weight:bold">Credito €0</span>`;
-      }else if(tipo.includes('vendita')){
-        const isLav=(selezioni===1||selezioni===3);
-        const isAsc=(selezioni===2||selezioni===4);
-        label=isLav?`🧺 Lavatrice N:${selezioni}`:(isAsc?`🌀 Asciugatrice N:${selezioni}`:'📊 Utilizzo');
-        bg='rgba(168,85,247,0.18)';border='#a855f7';colorCred='#a855f7';
-        credLine=`<span>💵 €${prezzoSel}</span><span style="color:${colorCred};font-weight:bold">Credito €${(credIni-prezzoSel).toFixed(2)}</span>`;
-      }else{
-        label='📊 '+(e.evento||'');
-        credLine='';
-      }
-      return `<div class="ordine-item" style="background:${bg};border-left-color:${border};margin-bottom:6px"><div class="ordine-head"><span class="ordine-id">${label}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">${credLine}</div></div>`;
-    }).join('');
-  }
+  // Eventi della card correntemente aperta + filtro cronologia (tutto/ricariche/utilizzi)
+  _cardEventiCorrenti=stats.eventiOrdinati;
+  _cardFiltroCron='tutto';
+  const btnBase='padding:6px 14px;border-radius:10px;cursor:pointer;font-size:0.85em;font-weight:bold;background:rgba(255,255,255,0.08);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15)';
   document.getElementById('cardDetailContent').innerHTML=
     `<div style="flex-shrink:0">${info}</div>`
-    +`<div style="margin-top:14px;font-weight:bold;color:#94a3b8;flex-shrink:0">📜 Cronologia eventi (${stats.eventiOrdinati.length})</div>`
-    +`<div style="flex:1;min-height:0;overflow-y:auto;margin-top:8px">${eventiHtml}</div>`;
+    +`<div style="margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0"><span style="font-weight:bold;color:#94a3b8">📜 Cronologia eventi (${stats.eventiOrdinati.length})</span><button id="btnCronRicariche" onclick="filtraCronologiaCard('ricariche')" style="${btnBase}">💰 Ricariche</button><button id="btnCronUtilizzi" onclick="filtraCronologiaCard('utilizzi')" style="${btnBase}">🧺 Utilizzi</button></div>`
+    +`<div id="cronologiaCardLista" style="flex:1;min-height:0;overflow-y:auto;margin-top:8px"></div>`;
+  renderCronologiaCard();
   openModal('modalCard');
+}
+// Genera l'HTML di un singolo evento nella cronologia card.
+function _eventoCardHtml(e){
+  const tipo=(e.evento||'').toLowerCase();
+  const credIni=parseFloat(e.creditoIniziale)||0;
+  const valRic=parseFloat(e.valoreRicarica)||0;
+  const prezzoSel=parseFloat(e.prezzoSelezione)||0;
+  const selezioni=parseInt(e.selezioni)||0;
+  const isManuale=tipo.includes('manuale')&&!tipo.includes('sherlock');
+  let label='',bg='rgba(59,130,246,0.18)',border='#3b82f6',colorCred='#94a3b8',credLine='';
+  if(tipo.includes('ricarica')){
+    label=isManuale?'📊 Ricarica Manuale':'📊 Ricarica Web';
+    bg='rgba(34,197,94,0.18)';border='#22c55e';colorCred='#22c55e';
+    credLine=`<span>💰 €${valRic}</span><span style="color:${colorCred};font-weight:bold">Credito €${(credIni+valRic).toFixed(2)}</span>`;
+  }else if(tipo.includes('scarico')){
+    label=isManuale?'📊 Scarico Manuale':'📊 Scarico Web';
+    bg='rgba(239,68,68,0.18)';border='#ef4444';colorCred='#ef4444';
+    credLine=`<span style="color:${colorCred};font-weight:bold">Credito €0</span>`;
+  }else if(tipo.includes('vendita')){
+    const isLav=(selezioni===1||selezioni===3);
+    const isAsc=(selezioni===2||selezioni===4);
+    label=isLav?`🧺 Lavatrice N:${selezioni}`:(isAsc?`🌀 Asciugatrice N:${selezioni}`:'📊 Utilizzo');
+    bg='rgba(168,85,247,0.18)';border='#a855f7';colorCred='#a855f7';
+    credLine=`<span>💵 €${prezzoSel}</span><span style="color:${colorCred};font-weight:bold">Credito €${(credIni-prezzoSel).toFixed(2)}</span>`;
+  }else{
+    label='📊 '+(e.evento||'');
+    credLine='';
+  }
+  return `<div class="ordine-item" style="background:${bg};border-left-color:${border};margin-bottom:6px"><div class="ordine-head"><span class="ordine-id">${label}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">${credLine}</div></div>`;
+}
+let _cardEventiCorrenti=[];
+let _cardFiltroCron='tutto';
+// Toggle filtro cronologia: cliccare il filtro attivo torna a "tutto".
+function filtraCronologiaCard(tipo){
+  _cardFiltroCron=(_cardFiltroCron===tipo)?'tutto':tipo;
+  renderCronologiaCard();
+}
+// Ridisegna la lista cronologia in base al filtro corrente + aggiorna stile pulsanti.
+function renderCronologiaCard(){
+  let lista=_cardEventiCorrenti;
+  if(_cardFiltroCron==='ricariche')lista=lista.filter(e=>(e.evento||'').toLowerCase().includes('ricarica'));
+  else if(_cardFiltroCron==='utilizzi')lista=lista.filter(e=>(e.evento||'').toLowerCase().includes('vendita'));
+  const btnRic=document.getElementById('btnCronRicariche');
+  const btnUti=document.getElementById('btnCronUtilizzi');
+  if(btnRic){const on=_cardFiltroCron==='ricariche';btnRic.style.background=on?'rgba(34,197,94,0.35)':'rgba(255,255,255,0.08)';btnRic.style.borderColor=on?'#22c55e':'rgba(255,255,255,0.15)';btnRic.style.color=on?'#fff':'#e2e8f0';}
+  if(btnUti){const on=_cardFiltroCron==='utilizzi';btnUti.style.background=on?'rgba(168,85,247,0.35)':'rgba(255,255,255,0.08)';btnUti.style.borderColor=on?'#a855f7':'rgba(255,255,255,0.15)';btnUti.style.color=on?'#fff':'#e2e8f0';}
+  const cont=document.getElementById('cronologiaCardLista');
+  if(!cont)return;
+  if(!lista.length){cont.innerHTML='<div class="empty-state" style="padding:18px"><p>Nessun evento</p></div>';return;}
+  cont.innerHTML=lista.map(_eventoCardHtml).join('');
 }
 
 function setupInfiniteScroll(){const cont=document.getElementById('ordiniList');cont.addEventListener('scroll',()=>{if(loadingMore)return;const{scrollTop,scrollHeight,clientHeight}=cont;if(scrollTop+clientHeight>=scrollHeight-100){loadMore();}});}

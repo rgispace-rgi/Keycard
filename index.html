@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v124</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v125</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2853,8 +2853,12 @@ function renderListaCard(){
       const col=coloreStatoCard(reg.stato);
       statoBadge=`<span style="background:${col.bg};color:${col.fg};font-size:0.75em;font-weight:bold;padding:2px 8px;border-radius:10px;margin-left:8px">${reg.stato}</span>`;
     }
-    const intest=(reg&&reg.intestatario)?`<span style="color:#cbd5e1">👤 ${reg.intestatario}</span>`:'';
-    return `<div class="ordine-item" style="background:rgba(59,130,246,0.12);border-left-color:#3b82f6;cursor:pointer" onclick="showCardDetail('${String(num).replace(/'/g,"\\'")}')"><div class="ordine-head"><span class="ordine-id">💳 <b style="font-size:1.3em;color:#fff">${num}</b>${statoBadge}</span><span style="color:${credColor};font-weight:bold">${credStr}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>🔑 ${keycard||'<span style=\"color:#94a3b8\">-</span>'}</span>${intest}${dataLine}</div></div>`;
+    // Intestatario + unità sulla riga di testa, dopo il numero card (👤 in bianco).
+    const capoParts=[];
+    if(reg&&reg.intestatario)capoParts.push(`<span style="color:#fff">👤</span> <span style="color:#e2e8f0">${reg.intestatario}</span>`);
+    if(reg&&reg.unita)capoParts.push(`🏠 <span style="color:#e2e8f0">${reg.unita}</span>`);
+    const capoExtra=capoParts.length?`<span style="font-weight:normal;font-size:0.8em;margin-left:10px">${capoParts.join(' <span style="color:#64748b">-</span> ')}</span>`:'';
+    return `<div class="ordine-item" style="background:rgba(59,130,246,0.12);border-left-color:#3b82f6;cursor:pointer" onclick="showCardDetail('${String(num).replace(/'/g,"\\'")}')"><div class="ordine-head"><span class="ordine-id">💳 <b style="font-size:1.3em;color:#fff">${num}</b>${statoBadge}${capoExtra}</span><span style="color:${credColor};font-weight:bold">${credStr}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>🔑 ${keycard||'<span style=\"color:#94a3b8\">-</span>'}</span>${dataLine}</div></div>`;
   }).join('');
   cont.innerHTML=html;
 }

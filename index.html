@@ -2293,7 +2293,9 @@ function setupFirebaseListeners() {
             const numero = String(data[k].numero != null ? data[k].numero : k);
             cardsRegistry[numero] = { ...data[k], numero };
         });
-        if (typeof filter !== 'undefined' && filter === 'card') render();
+        // /cards alimenta anche intestatario/unità sulle righe ORDINE (non solo il tab Card),
+        // quindi ridisegna a ogni aggiornamento del registro, qualunque sia il filtro attivo.
+        if (typeof filter !== 'undefined') render();
     });
     unsubscribers.push(() => cardsRef.off('value'));
 }

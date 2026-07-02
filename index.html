@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v125</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v126</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2735,6 +2735,15 @@ function coloreStatoCard(stato){
   if(s==='rubata'||s==='bloccata')return {bg:'rgba(239,68,68,0.25)',fg:'#f87171'};
   return {bg:'rgba(148,163,184,0.25)',fg:'#cbd5e1'};
 }
+// Colore sfondo/bordo della SCHEDA card in lista, per stato:
+// verde = Trovata/Restituita · rosso = Rubata/Smarrita/Bloccata/Non Restituita ·
+// blu (default) = Attiva (e stati sconosciuti).
+function coloreSchedaCard(stato){
+  const s=String(stato||'').toLowerCase();
+  if(s==='trovata'||s==='restituita')return {bg:'rgba(34,197,94,0.12)',border:'#22c55e'};
+  if(s==='rubata'||s==='smarrita'||s==='bloccata'||s==='non restituita')return {bg:'rgba(239,68,68,0.12)',border:'#ef4444'};
+  return {bg:'rgba(59,130,246,0.12)',border:'#3b82f6'};
+}
 // Propaga su Firebase l'attivazione e le card >70 viste localmente.
 // Esegue anche la migration una-tantum del vecchio localStorage (kc_card_feature_at, kc_card_extra)
 // dei client che avevano gia' la v114: il primo che apre la v115 popola la lista globale.
@@ -2862,7 +2871,8 @@ function renderListaCard(){
     if(reg&&reg.intestatario)capoParts.push(`<span style="color:#fff">👤</span> <span style="color:#e2e8f0">${reg.intestatario}</span>`);
     if(reg&&reg.unita)capoParts.push(`🏠 <span style="color:#e2e8f0">${reg.unita}</span>`);
     const capoExtra=capoParts.length?`<span style="font-weight:normal;font-size:0.8em;margin-left:10px">${capoParts.join(' <span style="color:#64748b">-</span> ')}</span>`:'';
-    return `<div class="ordine-item" style="background:rgba(59,130,246,0.12);border-left-color:#3b82f6;cursor:pointer" onclick="showCardDetail('${String(num).replace(/'/g,"\\'")}')"><div class="ordine-head"><span class="ordine-id">💳 <b style="font-size:1.3em;color:#fff">${num}</b>${statoBadge}${capoExtra}</span><span style="color:${credColor};font-weight:bold">${credStr}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>🔑 ${keycard||'<span style=\"color:#94a3b8\">-</span>'}</span>${dataLine}</div></div>`;
+    const colSch=coloreSchedaCard(reg&&reg.stato);
+    return `<div class="ordine-item" style="background:${colSch.bg};border-left-color:${colSch.border};cursor:pointer" onclick="showCardDetail('${String(num).replace(/'/g,"\\'")}')"><div class="ordine-head"><span class="ordine-id">💳 <b style="font-size:1.3em;color:#fff">${num}</b>${statoBadge}${capoExtra}</span><span style="color:${credColor};font-weight:bold">${credStr}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>🔑 ${keycard||'<span style=\"color:#94a3b8\">-</span>'}</span>${dataLine}</div></div>`;
   }).join('');
   cont.innerHTML=html;
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v130</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v131</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2413,11 +2413,20 @@ function updateLettoreBadge(){
     const ccPresente = !!(cc && cc.presente);
     const ccNum = (ccPresente && cc.cliente) ? String(cc.cliente) : '';
     const numTxt = ccNum ? (' 💳 ' + ccNum) : '';
+    // v131: grace period sul reinserimento. Durante in_grace la card NON è uscita
+    // (refresh del lettore ~1s, o togli/rimetti): il badge deve restare "inserita".
+    const inGrace = ccPresente && cc.in_grace === true;
+    const rientri = (ccPresente && Number(cc.rientri)) ? Number(cc.rientri) : 0;
+    // Durata "dentro": fonte primaria = inserita_at del bot (sopravvive a grace/refresh);
+    // fallback al card_inserita_da_s del sensore.
+    const ccIns = (ccPresente && typeof cc.inserita_at === 'number' && cc.inserita_at > 1000000000) ? cc.inserita_at : null;
+    const dentro = ccIns ? Math.max(0, nowSec - ccIns) : ((Number(d.card_inserita_da_s) || 0) + ageSec);
 
-    const tip = 'stato: ' + (d.stato_text || d.stato) +
+    const tip = 'stato: ' + (d.stato_text || d.stato) + (inGrace ? ' (grace)' : '') +
                 (ccNum ? '\ncliente: ' + ccNum : '') +
                 (ccPresente && cc.keycard ? '\nkeycard: ' + cc.keycard : '') +
                 (ccPresente && cc.credito != null ? '\ncredito: €' + cc.credito : '') +
+                (rientri > 0 ? '\nrientri: ' + rientri : '') +
                 '\naggiornato: ' + updTxt +
                 '\nip: ' + (d.ip || '?') + '\nsensore_ok: ' + (d.sensore_ok === false ? 'NO' : 'sì');
 
@@ -2430,12 +2439,14 @@ function updateLettoreBadge(){
         return;
     }
 
+    // Stato effettivo: durante la grace la card è ancora dentro → forza "presente"
+    // (il sensore mostra NO_CARD per un attimo al refresh, non va reso come vuoto).
+    const effStato = inGrace ? 1 : Number(d.stato);
+
     let cls = 'unknown', txt = '⚪ Lettore ?';
-    switch (Number(d.stato)) {
+    switch (effStato) {
         case 0: cls = 'lettore-vuoto'; txt = '🔵 Lettore vuoto'; break;
         case 1: {
-            // Tempo dentro = card_inserita_da_s (al momento dell'heartbeat) + età heartbeat.
-            const dentro = (Number(d.card_inserita_da_s) || 0) + ageSec;
             if (dentro > LETTORE_DIMENTICATA_S) {
                 // Tessera dimenticata: arancione pulsante
                 cls = 'lettore-dimenticata';

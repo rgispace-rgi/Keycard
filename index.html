@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v128</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v129</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2277,9 +2277,10 @@ function setupFirebaseListeners() {
     });
     unsubscribers.push(() => botRef.off('value'));
 
-    // Listener stato LETTORE (scritto dalla scheda ESP32 su /lavanderia/centralino_1,
-    // heartbeat 20s). Nodo assente → badge nascosto (il sistema funziona senza scheda).
-    const lettoreRef = db.ref('lavanderia/' + LETTORE_DEVICE_ID);
+    // Listener stato LETTORE: la scheda ESP32 scrive lo stato nel sotto-nodo
+    // /lavanderia/<id>/stato (gli eventi in /eventi), quindi ascoltiamo /stato,
+    // NON il nodo padre. Heartbeat 20s. Nodo assente → badge nascosto.
+    const lettoreRef = db.ref('lavanderia/' + LETTORE_DEVICE_ID + '/stato');
     lettoreRef.on('value', (snapshot) => {
         lettoreData = snapshot.val();
         updateLettoreBadge();

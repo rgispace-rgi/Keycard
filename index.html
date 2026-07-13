@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v131</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v132</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2383,6 +2383,7 @@ setInterval(updateBotBadge, 15000);
 const LETTORE_DEVICE_ID = 'centralino_1';
 const LETTORE_STALE_S = 60;          // v130: allineato al bot (SENSORE_MAX_ETA_S=60, 3 heartbeat da 20s)
 const LETTORE_DIMENTICATA_S = 300;   // v130: >5 min nel lettore → "tessera dimenticata"
+const LETTORE_GRACE_HOLD_S = 2;      // v132: durante la grace mostra la card solo per ~2s (copre il refresh ~1s), poi segue il sensore (niente fantasma)
 let lettoreData = null;
 let cardCorrenteData = null;         // v130: /sistema/card_corrente (numero card, scritto dal bot)
 
@@ -2413,9 +2414,16 @@ function updateLettoreBadge(){
     const ccPresente = !!(cc && cc.presente);
     const ccNum = (ccPresente && cc.cliente) ? String(cc.cliente) : '';
     const numTxt = ccNum ? (' 💳 ' + ccNum) : '';
-    // v131: grace period sul reinserimento. Durante in_grace la card NON è uscita
-    // (refresh del lettore ~1s, o togli/rimetti): il badge deve restare "inserita".
+    // v131/v132: grace period sul reinserimento. Durante in_grace il sensore vede
+    // NO_CARD ma la card potrebbe non essere uscita (refresh del lettore ~1s). Per NON
+    // lampeggiare "Lettore vuoto" al refresh teniamo il badge "inserita" SOLO per un hold
+    // breve (LETTORE_GRACE_HOLD_S ~2s da via_at). Oltre → segue il sensore: se la card è
+    // stata tolta davvero, il badge diventa "Lettore vuoto" (niente fantasma di 30s). Il
+    // SENSORE è l'autorità sulla presenza fisica.
     const inGrace = ccPresente && cc.in_grace === true;
+    const graceHold = inGrace
+        && typeof cc.via_at === 'number' && cc.via_at > 1000000000
+        && (nowSec - cc.via_at) <= LETTORE_GRACE_HOLD_S;
     const rientri = (ccPresente && Number(cc.rientri)) ? Number(cc.rientri) : 0;
     // Durata "dentro": fonte primaria = inserita_at del bot (sopravvive a grace/refresh);
     // fallback al card_inserita_da_s del sensore.
@@ -2439,9 +2447,9 @@ function updateLettoreBadge(){
         return;
     }
 
-    // Stato effettivo: durante la grace la card è ancora dentro → forza "presente"
-    // (il sensore mostra NO_CARD per un attimo al refresh, non va reso come vuoto).
-    const effStato = inGrace ? 1 : Number(d.stato);
+    // Stato effettivo: durante l'hold breve della grace forza "presente" (copre il
+    // refresh ~1s); altrimenti segue il sensore (rimozione reale → "Lettore vuoto").
+    const effStato = graceHold ? 1 : Number(d.stato);
 
     let cls = 'unknown', txt = '⚪ Lettore ?';
     switch (effStato) {

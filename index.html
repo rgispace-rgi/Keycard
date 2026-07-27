@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v134</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v135</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2781,7 +2781,7 @@ if(dataRicRecente&&!isNaN(dataRicRecente.getTime())){
   if(diffGiorni<30){
     const fonteLabel=fonteRicarica==='eventi'?'(da Eventi Firebase)':'(da Registro)';
     document.getElementById('warningText').textContent=`⚠️ Card già ricaricata ${diffGiorni} giorni fa! ${fonteLabel}`;
-    document.getElementById('warningContent').innerHTML=rows+`<div style="margin-top:12px;padding:10px;border-radius:10px;background:rgba(251,146,60,0.2);border:1px solid rgba(251,146,60,0.4);font-size:0.9em"><b>Ultima ricarica:</b> ${labelData}</div>`;
+    document.getElementById('warningContent').innerHTML=_credBanner+rows+`<div style="margin-top:12px;padding:10px;border-radius:10px;background:rgba(251,146,60,0.2);border:1px solid rgba(251,146,60,0.4);font-size:0.9em"><b>Ultima ricarica:</b> ${labelData}</div>`;
     setWarningMode('ricarica');
     openModal('modalWarning');
     return;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v135</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v136</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -2987,9 +2987,22 @@ function renderListaCard(){
     cont.innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div><p>Carico storico card…</p></div>';
     return;
   }
-  const numeri=elencoNumeriCard();
+  let numeri=elencoNumeriCard();
+  // Ricerca nel tab Card: numero (#N o N), keycard, intestatario (nome), unità, stato.
+  if(searchText){
+    const s=searchText.toLowerCase().trim();
+    const exact=s.match(/^#?(\d+)$/);   // "#5" o "5" → card esatta
+    numeri=numeri.filter(num=>{
+      if(exact&&String(num)===exact[1])return true;
+      const reg=cardsRegistry[String(num)]||null;
+      const cli=clienti.find(c=>String(c.numero)===String(num));
+      const kc=(reg&&reg.keycard)?reg.keycard:((cli&&cli.keycard)?cli.keycard:'');
+      return [String(num),String(kc||''),String((reg&&reg.intestatario)||''),String((reg&&reg.unita)||''),String((reg&&reg.stato)||'')]
+        .some(p=>p.toLowerCase().includes(s));
+    });
+  }
   if(!numeri.length){
-    cont.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><p>Nessuna card</p></div>';
+    cont.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><p>'+(searchText?'Nessun risultato':'Nessuna card')+'</p></div>';
     return;
   }
   const html=numeri.map(num=>{
@@ -3210,8 +3223,9 @@ if(selFilter&&match){match=tipoOrig.includes('vendita')&&selezioni===selFilter;}
 return match;}
 // Se solo card filter su altri filtri
 if(cardFilter){return String(o.cliente||'')===cardFilter;}
-// Ricerca normale testuale
-return String(o.id||'').toLowerCase().includes(s)||String(o.cliente||'').toLowerCase().includes(s)||String(o.keycard||'').toLowerCase().includes(s)||String(o.importo||'').toLowerCase().includes(s)||String(o.creatoDa||'').toLowerCase().includes(s)||String(o.cancellatoDa||'').toLowerCase().includes(s)||String(o.stato||'').toLowerCase().includes(s)||String(o.statoFinale||'').toLowerCase().includes(s)||String(o.note||'').toLowerCase().includes(s)||String(o.evento||'').toLowerCase().includes(s)||String(o.sede||'').toLowerCase().includes(s);}
+// Ricerca normale testuale (+ anagrafica card: intestatario e unità da /cards)
+const _regS=cardsRegistry[String(o.cliente||'')]||null;
+return String(o.id||'').toLowerCase().includes(s)||String(o.cliente||'').toLowerCase().includes(s)||String(o.keycard||'').toLowerCase().includes(s)||String(o.importo||'').toLowerCase().includes(s)||String(o.creatoDa||'').toLowerCase().includes(s)||String(o.cancellatoDa||'').toLowerCase().includes(s)||String(o.stato||'').toLowerCase().includes(s)||String(o.statoFinale||'').toLowerCase().includes(s)||String(o.note||'').toLowerCase().includes(s)||String(o.evento||'').toLowerCase().includes(s)||String(o.sede||'').toLowerCase().includes(s)||String((_regS&&_regS.intestatario)||'').toLowerCase().includes(s)||String((_regS&&_regS.unita)||'').toLowerCase().includes(s);}
 function renderUsers(){const users=getUsers();document.getElementById('userList').innerHTML=users.map((u,i)=>`<div class="user-item"><div class="user-item-info"><span>${u.username}</span><span class="user-role ${u.role==='admin'?'':'operatore'}">${u.role==='admin'?'Admin':'Operatore'}</span></div><div class="user-actions"><button class="btn-sm btn-edit" onclick="editUser(${i})">✏️</button>${users.length>1?`<button class="btn-sm btn-del" onclick="delUser(${i})">🗑️</button>`:''}</div></div>`).join('');}
 function addUser(){const u=document.getElementById('newUser').value.trim(),p=document.getElementById('newPass').value,r=document.getElementById('newRole').value;if(!u||!p){showAlert('Compila tutti i campi','error');return;}const users=getUsers();if(users.find(x=>x.username.toLowerCase()===u.toLowerCase())){showAlert('Username esiste','error');return;}users.push({username:u,password:p,role:r});saveUsers(users);renderUsers();document.getElementById('newUser').value='';document.getElementById('newPass').value='';showAlert('Utente aggiunto e sincronizzato!','success');}
 function editUser(i){editIdx=i;const u=getUsers()[i];document.getElementById('editUser').value=u.username;document.getElementById('editPass').value='';document.getElementById('editRole').value=u.role;openModal('modalEditUser');}

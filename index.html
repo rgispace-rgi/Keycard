@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ricarica KeyCard - Liquid Glass v143</title>
+    <title>🔑 Ricarica KeyCard - Liquid Glass v144</title>
     <style>
         /* === LIQUID GLASS THEME === */
         :root {
@@ -3187,6 +3187,14 @@ async function caricaEventiCard(num){
   return Object.values(map);
 }
 // Disegna il contenuto della scheda card. caricando=true mostra "⏳ carico storico…" finché non arriva il completo.
+// v144 - Ordini di ricarica della card chiusi SENZA esecuzione (EXPIRED/FAILED), dal registro in RAM (ultimi 1000).
+// Data di riferimento = creazione dell'ordine (quando era stata chiesta la ricarica).
+function ordiniNonFattiCard(num){
+  const n=String(num);
+  return (registro||[]).filter(o=>String(o.cliente)===n&&['EXPIRED','FAILED'].includes(String(o.stato||o.statoFinale||'').toUpperCase()))
+    .map(o=>({_ordine:o,_dt:parseDataOra(o.dataCreazione,o.oraCreazione)||parseDataOra(o.dataChiusura,o.oraChiusura||'00:00')}))
+    .filter(x=>x._dt);
+}
 function _renderSchedaCard(num, stats, caricando){
   const reg=cardsRegistry[String(num)]||null;
   const cli=clienti.find(c=>String(c.numero)===String(num));
@@ -3214,19 +3222,22 @@ function _renderSchedaCard(num, stats, caricando){
     +`<div class="modal-row"><span class="modal-label">Ultima ricarica:</span><span class="modal-value">${ultRic}</span></div>`
     +`<div class="modal-row"><span class="modal-label">Utilizzi ultimi 30 giorni:</span><span class="modal-value">${stats.utilizziUlt30}</span></div>`
     +`<div class="modal-row"><span class="modal-label">Utilizzi penultimi 30 giorni:</span><span class="modal-value">${stats.utilizziPrec30}</span></div>`;
-  // Eventi della card correntemente aperta + filtro cronologia (tutto/ricariche/utilizzi)
-  _cardEventiCorrenti=stats.eventiOrdinati;
+  const nonFatte=ordiniNonFattiCard(num);
+  info+=`<div class="modal-row"><span class="modal-label">Ricariche non fatte:</span><span class="modal-value" style="${nonFatte.length?'color:#fb923c;font-weight:bold':''}">${nonFatte.length}</span></div>`;
+  // Eventi della card + ordini non fatti (v144), ordinati per data; filtro cronologia (tutto/ricariche/utilizzi/nonfatte)
+  _cardEventiCorrenti=stats.eventiOrdinati.concat(nonFatte).sort((a,b)=>b._dt-a._dt);
   _cardFiltroCron='tutto';
   const btnBase='padding:6px 14px;border-radius:10px;cursor:pointer;font-size:0.85em;font-weight:bold;background:rgba(255,255,255,0.08);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15)';
   const titoloCron=caricando?`📜 Cronologia eventi <span style="font-weight:normal;font-size:0.8em">⏳ carico storico…</span>`:`📜 Cronologia eventi (${stats.eventiOrdinati.length})`;
   document.getElementById('cardDetailContent').innerHTML=
     `<div style="flex-shrink:0">${info}</div>`
-    +`<div style="margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0"><span style="font-weight:bold;color:#94a3b8">${titoloCron}</span><button id="btnCronRicariche" onclick="filtraCronologiaCard('ricariche')" style="${btnBase}">💰 Ricariche</button><button id="btnCronUtilizzi" onclick="filtraCronologiaCard('utilizzi')" style="${btnBase}">🧺 Utilizzi</button></div>`
+    +`<div style="margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0"><span style="font-weight:bold;color:#94a3b8">${titoloCron}</span><button id="btnCronRicariche" onclick="filtraCronologiaCard('ricariche')" style="${btnBase}">💰 Ricariche</button><button id="btnCronUtilizzi" onclick="filtraCronologiaCard('utilizzi')" style="${btnBase}">🧺 Utilizzi</button><button id="btnCronNonFatte" onclick="filtraCronologiaCard('nonfatte')" style="${btnBase}">⏰ Non fatte</button></div>`
     +`<div id="cronologiaCardLista" style="flex:1;min-height:0;overflow-y:auto;margin-top:8px"></div>`;
   renderCronologiaCard();
 }
 // Genera l'HTML di un singolo evento nella cronologia card.
 function _eventoCardHtml(e){
+  if(e._ordine)return _ordineNonFattoHtml(e._ordine);
   const tipo=(e.evento||'').toLowerCase();
   const credIni=parseFloat(e.creditoIniziale)||0;
   const valRic=parseFloat(e.valoreRicarica)||0;
@@ -3254,6 +3265,17 @@ function _eventoCardHtml(e){
   }
   return `<div class="ordine-item" style="background:${bg};border-left-color:${border};margin-bottom:6px"><div class="ordine-head"><span class="ordine-id">${label}</span><span style="color:#94a3b8;font-size:0.85em">${e.dataOra||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">${credLine}</div></div>`;
 }
+// v144 - Riga di un ordine di ricarica non eseguito (scaduto/fallito); click = dettaglio ordine.
+function _ordineNonFattoHtml(o){
+  const st=String(o.stato||o.statoFinale||'').toUpperCase();
+  const label=st==='FAILED'?'⚠️ Ricarica fallita':'⏰ Ricarica scaduta';
+  const id=parseInt(String(o.id).replace(/\D/g,''))||o.id;
+  const k=String(o.id).replace(/[^\w-]/g,'');
+  _cardOrdiniClick[k]=o;
+  // modalCard sta sopra modalDettaglio: la chiudo; dal dettaglio il link "Card" la riapre
+  return `<div class="ordine-item" onclick="closeModal('modalCard');showDettaglio(_cardOrdiniClick['${k}'])" style="cursor:pointer;background:rgba(251,146,60,0.18);border-left-color:#fb923c;margin-bottom:6px"><div class="ordine-head"><span class="ordine-id">${label} #${id}</span><span style="color:#94a3b8;font-size:0.85em">${formatData(o.dataCreazione)||''} ${o.oraCreazione||''}</span></div><div class="ordine-info" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>💰 €${o.importo}</span><span>✍️ ${o.creatoDa||'-'}</span><span style="color:#fb923c;font-weight:bold">NON FATTA</span></div></div>`;
+}
+let _cardOrdiniClick={};
 let _cardEventiCorrenti=[];
 let _cardFiltroCron='tutto';
 // Toggle filtro cronologia: cliccare il filtro attivo torna a "tutto".
@@ -3264,15 +3286,19 @@ function filtraCronologiaCard(tipo){
 // Ridisegna la lista cronologia in base al filtro corrente + aggiorna stile pulsanti.
 function renderCronologiaCard(){
   let lista=_cardEventiCorrenti;
-  if(_cardFiltroCron==='ricariche')lista=lista.filter(e=>{const t=(e.evento||'').toLowerCase();return t.includes('ricarica')||t.includes('scarico');});
-  else if(_cardFiltroCron==='utilizzi')lista=lista.filter(e=>(e.evento||'').toLowerCase().includes('vendita'));
+  if(_cardFiltroCron==='nonfatte')lista=lista.filter(e=>e._ordine);
+  else if(_cardFiltroCron==='ricariche')lista=lista.filter(e=>{if(e._ordine)return false;const t=(e.evento||'').toLowerCase();return t.includes('ricarica')||t.includes('scarico');});
+  else if(_cardFiltroCron==='utilizzi')lista=lista.filter(e=>!e._ordine&&(e.evento||'').toLowerCase().includes('vendita'));
   const btnRic=document.getElementById('btnCronRicariche');
   const btnUti=document.getElementById('btnCronUtilizzi');
+  const btnNF=document.getElementById('btnCronNonFatte');
+  if(btnNF){const on=_cardFiltroCron==='nonfatte';btnNF.style.background=on?'rgba(251,146,60,0.35)':'rgba(255,255,255,0.08)';btnNF.style.borderColor=on?'#fb923c':'rgba(255,255,255,0.15)';btnNF.style.color=on?'#fff':'#e2e8f0';}
   if(btnRic){const on=_cardFiltroCron==='ricariche';btnRic.style.background=on?'rgba(34,197,94,0.35)':'rgba(255,255,255,0.08)';btnRic.style.borderColor=on?'#22c55e':'rgba(255,255,255,0.15)';btnRic.style.color=on?'#fff':'#e2e8f0';}
   if(btnUti){const on=_cardFiltroCron==='utilizzi';btnUti.style.background=on?'rgba(168,85,247,0.35)':'rgba(255,255,255,0.08)';btnUti.style.borderColor=on?'#a855f7':'rgba(255,255,255,0.15)';btnUti.style.color=on?'#fff':'#e2e8f0';}
   const cont=document.getElementById('cronologiaCardLista');
   if(!cont)return;
-  if(!lista.length){cont.innerHTML='<div class="empty-state" style="padding:18px"><p>Nessun evento</p></div>';return;}
+  if(!lista.length){cont.innerHTML='<div class="empty-state" style="padding:18px"><p>'+(_cardFiltroCron==='nonfatte'?'Nessuna ricarica non fatta':'Nessun evento')+'</p></div>';return;}
+  _cardOrdiniClick={};
   cont.innerHTML=lista.map(_eventoCardHtml).join('');
 }
 
